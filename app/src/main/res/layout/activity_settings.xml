@@ -1,51 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
     android:background="#121212">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Wybierz silnik odtwarzania:"
-        android:textColor="#FFFFFF"
-        android:textSize="18sp"
-        android:layout_marginBottom="16dp" />
-
-    <RadioGroup
-        android:id="@+id/radioGroupEngine"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <RadioButton
-            android:id="@+id/radioMedia3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Media3 (Standardowy)"
-            android:textColor="#FFFFFF" />
-
-        <RadioButton
-            android:id="@+id/radioVlc"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="LibVLC (Kompatybilny)"
-            android:textColor="#FFFFFF" />
-
-        <RadioButton
-            android:id="@+id/radioWeb"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Web Chromium (Awaryjny)"
-            android:textColor="#FFFFFF" />
-    </RadioGroup>
-
-    <Button
-        android:id="@+id/btnSaveSettings"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Zapisz ustawienia" />
+        android:orientation="vertical"
+        android:padding="20dp">
 
-</LinearLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="MENEDŻER MODUŁÓW PRO"
+            android:textColor="#FFBB00"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Wyłącz nieużywane funkcje, aby przyspieszyć TV"
+            android:textColor="#888888"
+            android:layout_marginBottom="20dp" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switchRec"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Nagrywanie i Harmonogram"
+            android:textColor="#FFFFFF" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switchRemote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Zdalne Sterowanie (WWW)"
+            android:textColor="#FFFFFF" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switchVoice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Wyszukiwanie Głosowe"
+            android:textColor="#FFFFFF" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switchEmulation"
+        <com.google.android.material.switchmaterial.SwitchMaterial 
+            android:id="@+id/switchPip" 
+    <com.google.android.material.switchmaterial.SwitchMaterial 
+        android:id="@+id/switchStats" 
+        android:layout_width="match_parent" 
+        android:layout_height="wrap_content" 
+        android:text="Statystyki Sygnału (Nerd Mode)" 
+        android:textColor="#FFFFFF" />
+            android:layout_width="match_parent" 
+            android:layout_height="wrap_content" 
+            android:text="Obraz w obrazie (PiP)" 
+            android:textColor="#FFFFFF" />
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Emulacja MAC / Nagłówki STB"
+            android:textColor="#FFFFFF" />
+
+        <Button
+            android:id="@+id/btnBack"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ZAPISZ KONFIGURACJĘ"
+            android:layout_marginTop="30dp"
+            android:backgroundTint="#4CAF50" />
+
+    </LinearLayout>
+</ScrollView>

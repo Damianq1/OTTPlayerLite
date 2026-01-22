@@ -17,6 +17,14 @@
 
     <EditText
         android:id="@+id/urlInput"
+    <ImageButton 
+        android:id="@+id/btnVoice" 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:layout_toEndOf="@id/urlInput" 
+        android:layout_alignTop="@id/urlInput" 
+        android:src="@android:drawable/ic_btn_speak_now" 
+        android:background="?android:attr/selectableItemBackground" />
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/titleText"
@@ -30,6 +38,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/urlInput"
+    <ImageButton 
+        android:id="@+id/btnVoice" 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:layout_toEndOf="@id/urlInput" 
+        android:layout_alignTop="@id/urlInput" 
+        android:src="@android:drawable/ic_btn_speak_now" 
+        android:background="?android:attr/selectableItemBackground" />
         android:layout_marginTop="8dp"
         android:text="Załaduj z URL" />
 

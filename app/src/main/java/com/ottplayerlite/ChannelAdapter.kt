@@ -17,6 +17,12 @@ class ChannelAdapter(
         val name: TextView = view.findViewById(R.id.channelName)
         val group: TextView = view.findViewById(R.id.channelGroup)
         val logo: ImageView = view.findViewById(R.id.channelLogo)
+        
+        init {
+            // To sprawia, że wiersz reaguje na pilota
+            view.isFocusable = true
+            view.isFocusableInTouchMode = true
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -28,8 +34,26 @@ class ChannelAdapter(
         val channel = channels[position]
         holder.name.text = channel.name
         holder.group.text = channel.group
-        Glide.with(holder.itemView.context).load(channel.logo).into(holder.logo)
+        
+        Glide.with(holder.itemView.context)
+            .load(channel.logo)
+            .placeholder(android.R.drawable.ic_menu_report_image)
+            .into(holder.logo)
+
         holder.itemView.setOnClickListener { onClick(channel) }
+        
+        // Obsługa podświetlenia dla pilota (wizualna zmiana)
+        holder.itemView.setOnFocusChangeListener { v, hasFocus ->
+            if (hasFocus) {
+                v.setBackgroundColor(android.graphics.Color.parseColor("#444444"))
+                v.scaleX = 1.05f
+                v.scaleY = 1.05f
+            } else {
+                v.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                v.scaleX = 1.0f
+                v.scaleY = 1.0f
+            }
+        }
     }
 
     override fun getItemCount() = channels.size
