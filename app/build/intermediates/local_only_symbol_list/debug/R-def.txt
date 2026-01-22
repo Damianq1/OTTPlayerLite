@@ -1,0 +1,16 @@
+R_DEF: Internal format may change without notice
+local
+id btnAddPlaylist
+id listCategories
+id listChannels
+id playerView
+id txtCategory
+id txtChannel
+layout activity_main
+layout activity_player
+layout item_category
+layout item_channel
+string add_playlist
+string app_name
+string no_playlist
+style Theme.Dark

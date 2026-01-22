@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">OTTPlayerLite</string>
+    <string name="add_playlist">Dodaj playlistę</string>
+    <string name="no_playlist">Brak playlisty</string>
+</resources>
