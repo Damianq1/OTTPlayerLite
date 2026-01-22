@@ -27,11 +27,27 @@
 
     <Button
         android:id="@+id/btnLoad"
+    <Button 
+        android:id="@+id/btnFile" 
+        android:layout_width="match_parent" 
+        android:layout_height="wrap_content" 
+        android:layout_below="@id/btnLoad" 
+        android:layout_marginTop="8dp" 
+        android:text="Wybierz plik .m3u" 
+        android:backgroundTint="#4CAF50" />
     <Spinner 
         android:id="@+id/groupSpinner" 
         android:layout_width="match_parent" 
         android:layout_height="wrap_content" 
         android:layout_below="@id/btnLoad" 
+    <Button 
+        android:id="@+id/btnFile" 
+        android:layout_width="match_parent" 
+        android:layout_height="wrap_content" 
+        android:layout_below="@id/btnLoad" 
+        android:layout_marginTop="8dp" 
+        android:text="Wybierz plik .m3u" 
+        android:backgroundTint="#4CAF50" />
         android:layout_marginTop="8dp" 
         android:backgroundTint="#FFFFFF" 
         android:padding="8dp" />
@@ -46,11 +62,27 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/btnLoad"
+    <Button 
+        android:id="@+id/btnFile" 
+        android:layout_width="match_parent" 
+        android:layout_height="wrap_content" 
+        android:layout_below="@id/btnLoad" 
+        android:layout_marginTop="8dp" 
+        android:text="Wybierz plik .m3u" 
+        android:backgroundTint="#4CAF50" />
     <Spinner 
         android:id="@+id/groupSpinner" 
         android:layout_width="match_parent" 
         android:layout_height="wrap_content" 
         android:layout_below="@id/btnLoad" 
+    <Button 
+        android:id="@+id/btnFile" 
+        android:layout_width="match_parent" 
+        android:layout_height="wrap_content" 
+        android:layout_below="@id/btnLoad" 
+        android:layout_marginTop="8dp" 
+        android:text="Wybierz plik .m3u" 
+        android:backgroundTint="#4CAF50" />
         android:layout_marginTop="8dp" 
         android:backgroundTint="#FFFFFF" 
         android:padding="8dp" />

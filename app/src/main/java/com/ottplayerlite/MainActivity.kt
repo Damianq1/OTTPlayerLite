@@ -1,9 +1,11 @@
 package com.ottplayerlite
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -15,12 +17,18 @@ class MainActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var groupSpinner: Spinner
 
+    // Wybieracz plików
+    private val filePicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let { readLocalFile(it) }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         val urlInput = findViewById<EditText>(R.id.urlInput)
         val btnLoad = findViewById<Button>(R.id.btnLoad)
+        val btnFile = findViewById<Button>(R.id.btnFile)
         val btnSettings = findViewById<Button>(R.id.btnSettings)
         recyclerView = findViewById(R.id.recyclerView)
         groupSpinner = findViewById(R.id.groupSpinner)
@@ -30,6 +38,11 @@ class MainActivity : AppCompatActivity() {
         btnLoad.setOnClickListener {
             val url = urlInput.text.toString()
             if (url.isNotEmpty()) loadPlaylist(url)
+            else Toast.makeText(this, "Wpisz link!", Toast.LENGTH_SHORT).show()
+        }
+
+        btnFile.setOnClickListener {
+            filePicker.launch("*/*")
         }
 
         btnSettings.setOnClickListener {
@@ -44,20 +57,44 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun readLocalFile(uri: Uri) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val content = contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
+                content?.let { processPlaylist(it) }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@MainActivity, "Błąd pliku: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
     private fun loadPlaylist(url: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val content = URL(url).readText()
-                allChannels = parseM3U(content)
-                val groups = listOf("Wszystkie") + allChannels.map { it.group }.distinct().filter { it.isNotEmpty() }
-                
+                processPlaylist(content)
+            } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    val adapter = ArrayAdapter(this@MainActivity, android.R.layout.simple_spinner_item, groups)
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                    groupSpinner.adapter = adapter
-                    filterChannels("Wszystkie")
+                    Toast.makeText(this@MainActivity, "Błąd pobierania: Sprawdź link!", Toast.LENGTH_LONG).show()
                 }
-            } catch (e: Exception) { e.printStackTrace() }
+            }
+        }
+    }
+
+    private suspend fun processPlaylist(content: String) {
+        allChannels = parseM3U(content)
+        val groups = listOf("Wszystkie") + allChannels.map { it.group }.distinct().filter { it.isNotEmpty() }
+        
+        withContext(Dispatchers.Main) {
+            if (allChannels.isEmpty()) {
+                Toast.makeText(this@MainActivity, "Lista jest pusta!", Toast.LENGTH_SHORT).show()
+            }
+            val adapter = ArrayAdapter(this@MainActivity, android.R.layout.simple_spinner_item, groups)
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            groupSpinner.adapter = adapter
+            filterChannels("Wszystkie")
         }
     }
 
