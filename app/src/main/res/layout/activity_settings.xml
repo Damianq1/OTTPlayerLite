@@ -60,8 +60,6 @@
             <RadioButton android:id="@+id/radioExo" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Tylko ExoPlayer" android:textColor="#FFFFFF"/>
             <RadioButton android:id="@+id/radioExternal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Zewnętrzny (VLC/MX)" android:textColor="#FFFFFF"/>
             <RadioButton android:id="@+id/radioWeb" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Silnik Web (Chromium)" android:textColor="#FFFFFF"/>
-            <RadioButton android:id="@+id/radioWeb" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Silnik Web (Chromium)" android:textColor="#FFFFFF"/>
-            <RadioButton android:id="@+id/radioWeb" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Silnik Web (Chromium)" android:textColor="#FFFFFF"/>
         </RadioGroup>
 
     </LinearLayout>
