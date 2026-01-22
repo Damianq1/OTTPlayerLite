@@ -4,7 +4,16 @@ plugins {
     id 'kotlin-kapt'
 }
 
+configurations.all { 
+    resolutionStrategy { 
+        force "androidx.annotation:annotation:1.7.0" 
+    } 
+}
 android {
+    packagingOptions { 
+        pickFirst "lib/*/libc++_shared.so" 
+        exclude "META-INF/androidx.*" 
+    }
     namespace 'com.ottplayerlite'
     compileSdk 34
 
