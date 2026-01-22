@@ -27,6 +27,14 @@
 
     <Button
         android:id="@+id/btnLoad"
+    <Spinner 
+        android:id="@+id/groupSpinner" 
+        android:layout_width="match_parent" 
+        android:layout_height="wrap_content" 
+        android:layout_below="@id/btnLoad" 
+        android:layout_marginTop="8dp" 
+        android:backgroundTint="#FFFFFF" 
+        android:padding="8dp" />
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/urlInput"
@@ -38,6 +46,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/btnLoad"
+    <Spinner 
+        android:id="@+id/groupSpinner" 
+        android:layout_width="match_parent" 
+        android:layout_height="wrap_content" 
+        android:layout_below="@id/btnLoad" 
+        android:layout_marginTop="8dp" 
+        android:backgroundTint="#FFFFFF" 
+        android:padding="8dp" />
         android:layout_marginTop="16dp"
         android:layout_above="@+id/btnSettings" />
 
