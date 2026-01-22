@@ -10,7 +10,6 @@ class SettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
-        val prefs = getSharedPreferences("Settings", MODE_PRIVATE)
         
         // Mapowanie switchy do kluczy ModuleManager
         val modules = mapOf(
