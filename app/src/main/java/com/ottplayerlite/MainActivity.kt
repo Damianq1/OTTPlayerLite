@@ -7,10 +7,7 @@ import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import java.net.URL
 
 class MainActivity : AppCompatActivity() {
@@ -20,8 +17,8 @@ class MainActivity : AppCompatActivity() {
 
         val urlInput = findViewById<EditText>(R.id.urlInput)
         val btnLoad = findViewById<Button>(R.id.btnLoad)
-        val btnSettings = findViewById<Button>(R.id.btnSettings)
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
+        val btnSettings = findViewById<Button>(R.id.btnSettings)
 
         recyclerView.layoutManager = LinearLayoutManager(this)
 
@@ -43,12 +40,11 @@ class MainActivity : AppCompatActivity() {
                 val content = URL(url).readText()
                 val channels = parseM3U(content)
                 withContext(Dispatchers.Main) {
-                    // Tutaj podepniemy Twój adapter (musisz go mieć w projekcie)
-                    // rv.adapter = ChannelAdapter(channels) { channel ->
-                    //    val intent = Intent(this@MainActivity, PlayerActivity::class.java)
-                    //    intent.putExtra("url", channel.url)
-                    //    startActivity(intent)
-                    // }
+                    rv.adapter = ChannelAdapter(channels) { channel ->
+                        val intent = Intent(this@MainActivity, PlayerActivity::class.java)
+                        intent.putExtra("url", channel.url)
+                        startActivity(intent)
+                    }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -56,14 +52,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun parseM3U(m3u: String): List<Pair<String, String>> {
-        val list = mutableListOf<Pair<String, String>>()
-        var name = "Nieznany kanał"
+    private fun parseM3U(m3u: String): List<Channel> {
+        val list = mutableListOf<Channel>()
+        var name = ""
         m3u.lineSequence().forEach { line ->
             if (line.startsWith("#EXTINF")) {
                 name = line.substringAfter(",").trim()
             } else if (line.startsWith("http")) {
-                list.add(name to line.trim())
+                if (name.isNotEmpty()) {
+                    list.add(Channel(name, line.trim()))
+                    name = ""
+                }
             }
         }
         return list
