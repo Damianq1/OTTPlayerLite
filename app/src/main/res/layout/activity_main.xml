@@ -13,7 +13,7 @@
         android:textColor="#FFFFFF"
         android:textSize="24sp"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="32dp" />
+        android:layout_marginBottom="16dp" />
 
     <EditText
         android:id="@+id/urlInput"
@@ -21,80 +21,50 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/titleText"
         android:text="https://my.teleelevidenie.com/m3u8/ott_navigator/hls_custom/23101/oU8yua6UQkz8NpRQAU"
-        android:textColorHint="#888888"
         android:textColor="#FFFFFF"
+        android:textColorHint="#888888"
         android:backgroundTint="#FFFFFF" />
 
     <Button
         android:id="@+id/btnLoad"
-    <Button 
-        android:id="@+id/btnFile" 
-        android:layout_width="match_parent" 
-        android:layout_height="wrap_content" 
-        android:layout_below="@id/btnLoad" 
-        android:layout_marginTop="8dp" 
-        android:text="Wybierz plik .m3u" 
-        android:backgroundTint="#4CAF50" />
-    <Spinner 
-        android:id="@+id/groupSpinner" 
-        android:layout_width="match_parent" 
-        android:layout_height="wrap_content" 
-        android:layout_below="@id/btnLoad" 
-    <Button 
-        android:id="@+id/btnFile" 
-        android:layout_width="match_parent" 
-        android:layout_height="wrap_content" 
-        android:layout_below="@id/btnLoad" 
-        android:layout_marginTop="8dp" 
-        android:text="Wybierz plik .m3u" 
-        android:backgroundTint="#4CAF50" />
-        android:layout_marginTop="8dp" 
-        android:backgroundTint="#FFFFFF" 
-        android:padding="8dp" />
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/urlInput"
-        android:layout_marginTop="16dp"
-        android:text="Załaduj Listę" />
+        android:layout_marginTop="8dp"
+        android:text="Załaduj z URL" />
+
+    <Button
+        android:id="@+id/btnFile"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btnLoad"
+        android:layout_marginTop="8dp"
+        android:text="Wybierz plik .m3u"
+        android:backgroundTint="#4CAF50" />
+
+    <Spinner
+        android:id="@+id/groupSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btnFile"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="#FFFFFF"
+        android:padding="8dp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/btnLoad"
-    <Button 
-        android:id="@+id/btnFile" 
-        android:layout_width="match_parent" 
-        android:layout_height="wrap_content" 
-        android:layout_below="@id/btnLoad" 
-        android:layout_marginTop="8dp" 
-        android:text="Wybierz plik .m3u" 
-        android:backgroundTint="#4CAF50" />
-    <Spinner 
-        android:id="@+id/groupSpinner" 
-        android:layout_width="match_parent" 
-        android:layout_height="wrap_content" 
-        android:layout_below="@id/btnLoad" 
-    <Button 
-        android:id="@+id/btnFile" 
-        android:layout_width="match_parent" 
-        android:layout_height="wrap_content" 
-        android:layout_below="@id/btnLoad" 
-        android:layout_marginTop="8dp" 
-        android:text="Wybierz plik .m3u" 
-        android:backgroundTint="#4CAF50" />
-        android:layout_marginTop="8dp" 
-        android:backgroundTint="#FFFFFF" 
-        android:padding="8dp" />
-        android:layout_marginTop="16dp"
-        android:layout_above="@+id/btnSettings" />
+        android:layout_below="@id/groupSpinner"
+        android:layout_above="@+id/btnSettings"
+        android:layout_marginTop="8dp" />
 
     <Button
         android:id="@+id/btnSettings"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:text="Ustawienia Silnika"
+        android:text="Ustawienia"
         android:backgroundTint="#444444" />
 
 </RelativeLayout>
