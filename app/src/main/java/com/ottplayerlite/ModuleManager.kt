@@ -1,12 +1,11 @@
 package com.ottplayerlite
 
 import android.content.Context
-import com.ottplayerlite.BuildConfig
 
 object ModuleManager {
     fun isEnabled(context: Context, moduleKey: String): Boolean {
-        // W wersji LITE wymuszamy wyłączenie ciężkich modułów
-        if (BuildConfig.FLAVOR == "lite") {
+        // Używamy pełnej ścieżki do wygenerowanej klasy
+        if (com.ottplayerlite.BuildConfig.FLAVOR == "lite") {
             if (moduleKey == "stats" || moduleKey == "pip" || moduleKey == "remote") return false
         }
         
