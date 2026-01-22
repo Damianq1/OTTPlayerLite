@@ -5,7 +5,6 @@ import android.net.Uri
 import android.util.Log
 import com.ottplayerlite.models.Channel
 import java.io.BufferedReader
-import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -24,13 +23,9 @@ object M3UParser {
         return try {
             val conn = URL(url).openConnection() as HttpURLConnection
             conn.connectTimeout = 15000
-            // Pobieramy User-Agent z Twojego Managera!
             val ua = context?.let { UserAgentManager.getUserAgent(it) } ?: "OTTPlayerLite/1.0"
             conn.setRequestProperty("User-Agent", ua)
-            
-            conn.inputStream.bufferedReader().use { reader ->
-                parseFromReader(reader)
-            }
+            conn.inputStream.bufferedReader().use { parseFromReader(it) }
         } catch (e: Exception) {
             Log.e("PARSER", "Błąd URL: ${e.message}")
             emptyList()
@@ -39,9 +34,7 @@ object M3UParser {
 
     private fun parseLocal(context: Context, uri: Uri): List<Channel> {
         return try {
-            context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { reader ->
-                parseFromReader(reader)
-            } ?: emptyList()
+            context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { parseFromReader(it) } ?: emptyList()
         } catch (e: Exception) {
             emptyList()
         }
@@ -49,27 +42,37 @@ object M3UParser {
 
     private fun parseFromReader(reader: BufferedReader): List<Channel> {
         val list = mutableListOf<Channel>()
-        var name = ""
-        var group = DEFAULT_GROUP
-        var logo: String? = null
+        var currentName = ""
+        var currentGroup = DEFAULT_GROUP
+        var currentLogo: String? = null
 
         reader.forEachLine { line ->
             val l = line.trim()
             if (l.isEmpty()) return@forEachLine
-            
+
             if (l.startsWith("#EXTINF", true)) {
-                val n = Regex("tvg-name=\"(.*?)\"").find(l)?.groupValues?.get(1)
-                val g = Regex("group-title=\"(.*?)\"").find(l)?.groupValues?.get(1)
-                val lg = Regex("tvg-logo=\"(.*?)\"").find(l)?.groupValues?.get(1)
-                val afterComma = l.substringAfter(",", "").trim()
+                // Wyciąganie nazwy (najpierw szukamy tvg-name, potem po przecinku)
+                val tvgName = Regex("""tvg-name="([^"]*)"""").find(l)?.groupValues?.get(1)
+                val groupTitle = Regex("""group-title="([^"]*)"""").find(l)?.groupValues?.get(1)
+                val tvgLogo = Regex("""tvg-logo="([^"]*)"""").find(l)?.groupValues?.get(1)
                 
-                name = n ?: afterComma.ifEmpty { "Kanał" }
-                group = g ?: DEFAULT_GROUP
-                logo = lg
-            } else if (l.startsWith("http") || l.startsWith("rtmp") || l.startsWith("rtsp")) {
-                list.add(Channel(name, l, group, logo))
+                val nameAfterComma = l.substringAfterLast(",").trim()
+                
+                currentName = tvgName ?: if (nameAfterComma.isNotEmpty()) nameAfterComma else "Brak nazwy"
+                currentGroup = groupTitle ?: DEFAULT_GROUP
+                currentLogo = tvgLogo
+            } else if (!l.startsWith("#")) {
+                // Jeśli linia nie zaczyna się od #, zakładamy, że to URL kanału
+                if (currentName.isNotEmpty()) {
+                    list.add(Channel(currentName, l, currentGroup, currentLogo))
+                    // Czyścimy nazwę, by nie dodać tego samego adresu dwa razy, jeśli lista jest błędna
+                    currentName = "" 
+                    currentGroup = DEFAULT_GROUP
+                    currentLogo = null
+                }
             }
         }
+        Log.d("PARSER", "Zakończono parsowanie. Znaleziono ${list.size} kanałów.")
         return list
     }
 }

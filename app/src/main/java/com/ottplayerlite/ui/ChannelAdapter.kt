@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.ottplayerlite.R
 import com.ottplayerlite.models.Channel
 import com.bumptech.glide.Glide
-import com.ottplayerlite.Logger
+import com.ottplayerlite.utils.Logger
 
 class ChannelAdapter(
     private val items: List<Channel>,
@@ -34,13 +34,14 @@ class ChannelAdapter(
         h.name.text = c.name
         h.group.text = c.group
 
+        // Ładowanie logo z Glide
         if (!c.logo.isNullOrEmpty()) {
             Glide.with(h.logo.context)
                 .load(c.logo)
-                .placeholder(R.drawable.ic_placeholder)
+                .error(android.R.drawable.ic_menu_report_image) // Wbudowana ikona błędu
                 .into(h.logo)
         } else {
-            h.logo.setImageResource(R.drawable.ic_placeholder)
+            h.logo.setImageResource(android.R.drawable.ic_menu_gallery) // Wbudowana ikona galerii
         }
 
         h.itemView.setOnClickListener { onClick(c) }

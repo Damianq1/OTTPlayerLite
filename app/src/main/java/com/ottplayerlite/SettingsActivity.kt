@@ -22,7 +22,6 @@ class SettingsActivity : AppCompatActivity() {
         val customUAInput = findViewById<EditText>(R.id.editCustomUA)
         
         // Wczytaj aktualne ustawienia
-        val currentMode = UserAgentManager.getUserAgent(this) // Uproszczone dla logiki przełączania
         // Tutaj najlepiej byłoby dodać metodę getMode w UserAgentManager, 
         // ale na potrzeby UI użyjemy bezpośrednio SharedPreferences lub domyślnego zaznaczenia.
 
