@@ -1,12 +1,16 @@
 package com.ottplayerlite
 
 import android.content.Context
+import com.ottplayerlite.BuildConfig
 
 object ModuleManager {
     fun isEnabled(context: Context, moduleKey: String): Boolean {
+        // W wersji LITE wymuszamy wyłączenie ciężkich modułów
+        if (BuildConfig.FLAVOR == "lite") {
+            if (moduleKey == "stats" || moduleKey == "pip" || moduleKey == "remote") return false
+        }
+        
         val prefs = context.getSharedPreferences("Modules", Context.MODE_PRIVATE)
-        // Wersja LITE ma wszystko domyślnie wyłączone poza bazą
-        if (BuildConfig.FLAVOR == "lite") return false
         return prefs.getBoolean(moduleKey, true)
     }
 

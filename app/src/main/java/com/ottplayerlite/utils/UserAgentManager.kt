@@ -1,49 +1,25 @@
 package com.ottplayerlite.utils
 
 import android.content.Context
-import androidx.preference.PreferenceManager
 
 object UserAgentManager {
-    private const val KEY_MODE = "ua_mode"
-    private const val KEY_CUSTOM = "ua_custom"
-    private const val KEY_PLAYER_MODE = "player_mode"
+    private const val PREFS_NAME = "Settings"
+    private const val KEY_UA = "user_agent"
 
-    const val MODE_DEFAULT = 0
-    const val MODE_VLC = 1
-    const val MODE_CHROME = 2
-    const val MODE_CUSTOM = 3
+    val AGENTS = mapOf(
+        "Android TV (Default)" to "OTTPlayerPRO/1.0 (Android TV)",
+        "MAG 250 (STB)" to "Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG200 static Gecko/20100101 SmartTV/8.4.1",
+        "Samsung SmartTV" to "Mozilla/5.0 (SmartHub; SMART-TV; Linux/SmartTV) AppleWebKit/538.1 (KHTML, like Gecko) SamsungBrowser/2.0 TV Safari/538.1",
+        "Apple TV" to "AppleTV5,3/9.1.1"
+    )
 
-    const val PLAYER_AUTO = 0
-    const val PLAYER_EXO = 1
-    const val PLAYER_EXTERNAL = 2
-
-    private const val UA_DEFAULT = "OTTPlayerLite/1.0"
-    private const val UA_VLC = "VLC/3.0.16 LibVLC/3.0.16"
-    private const val UA_CHROME = "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Mobile Safari/537.36"
-
-    fun setMode(context: Context, mode: Int) {
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putInt(KEY_MODE, mode).apply()
+    fun getStringAgent(context: Context): String {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getString(KEY_UA, AGENTS["Android TV (Default)"]) ?: AGENTS["Android TV (Default)"]!!
     }
 
-    fun getUserAgent(context: Context): String {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        return when (prefs.getInt(KEY_MODE, MODE_DEFAULT)) {
-            MODE_VLC -> UA_VLC
-            MODE_CHROME -> UA_CHROME
-            MODE_CUSTOM -> prefs.getString(KEY_CUSTOM, UA_DEFAULT) ?: UA_DEFAULT
-            else -> UA_DEFAULT
-        }
-    }
-
-    fun setCustomUA(context: Context, ua: String) {
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putString(KEY_CUSTOM, ua).apply()
-    }
-
-    fun setPlayerMode(context: Context, mode: Int) {
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putInt(KEY_PLAYER_MODE, mode).apply()
-    }
-
-    fun getPlayerMode(context: Context): Int {
-        return PreferenceManager.getDefaultSharedPreferences(context).getInt(KEY_PLAYER_MODE, PLAYER_AUTO)
+    fun setAgent(context: Context, uaString: String) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putString(KEY_UA, uaString).apply()
     }
 }
