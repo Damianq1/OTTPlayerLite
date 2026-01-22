@@ -9,7 +9,7 @@
     <application
         android:allowBackup="true"
         android:label="OTTPlayerLite"
-        android:theme="@style/Theme.AppCompat.NoActionBar"
+        android:theme="@style/Theme.OttPlayerLite"
         android:usesCleartextTraffic="true">
 
         <activity
