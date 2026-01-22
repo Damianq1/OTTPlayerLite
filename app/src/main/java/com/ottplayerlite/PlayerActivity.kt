@@ -43,7 +43,7 @@ class PlayerActivity : AppCompatActivity() {
         val channel = playlist[index]
         
         player = ExoPlayer.Builder(this).build().apply {
-            setMediaItem(MediaItem.fromUri(channel.url))
+            setMediaSource(DefaultMediaSourceFactory(this).createMediaSource(MediaItem.fromUri(channel.url)))
             prepare()
             play()
         }
