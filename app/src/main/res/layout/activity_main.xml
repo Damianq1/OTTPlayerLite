@@ -5,82 +5,54 @@
     android:background="#121212"
     android:padding="16dp">
 
-    <TextView
-        android:id="@+id/titleText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="OttPlayer Lite"
-        android:textColor="#FFFFFF"
-        android:textSize="24sp"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="16dp" />
-
-    <EditText
-        android:id="@+id/urlInput"
-    <ImageButton 
-        android:id="@+id/btnVoice" 
-        android:layout_width="wrap_content" 
-        android:layout_height="wrap_content" 
-        android:layout_toEndOf="@id/urlInput" 
-        android:layout_alignTop="@id/urlInput" 
-        android:src="@android:drawable/ic_btn_speak_now" 
-        android:background="?android:attr/selectableItemBackground" />
+    <LinearLayout
+        android:id="@+id/topBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/titleText"
-        android:text="https://my.teleelevidenie.com/m3u8/ott_navigator/hls_custom/23101/oU8yua6UQkz8NpRQAU"
-        android:textColor="#FFFFFF"
-        android:textColorHint="#888888"
-        android:backgroundTint="#FFFFFF" />
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/btnLoad"
+        <EditText
+            android:id="@+id/urlInput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Link M3U8"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#888888" />
+
+        <ImageButton
+            android:id="@+id/btnVoice"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:src="@android:drawable/ic_btn_speak_now" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/controls"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/urlInput"
-    <ImageButton 
-        android:id="@+id/btnVoice" 
-        android:layout_width="wrap_content" 
-        android:layout_height="wrap_content" 
-        android:layout_toEndOf="@id/urlInput" 
-        android:layout_alignTop="@id/urlInput" 
-        android:src="@android:drawable/ic_btn_speak_now" 
-        android:background="?android:attr/selectableItemBackground" />
+        android:layout_below="@id/topBar"
         android:layout_marginTop="8dp"
-        android:text="Załaduj z URL" />
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/btnFile"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/btnLoad"
-        android:layout_marginTop="8dp"
-        android:text="Wybierz plik .m3u"
-        android:backgroundTint="#4CAF50" />
+        <Button android:id="@+id/btnLoad" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Ładuj" />
+        <Button android:id="@+id/btnFile" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Moje nagrania" android:layout_marginStart="8dp" />
+        <Button android:id="@+id/btnSettings" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Ustawienia" android:layout_marginStart="8dp" />
+    </LinearLayout>
 
     <Spinner
         android:id="@+id/groupSpinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/btnFile"
-        android:layout_marginTop="8dp"
-        android:backgroundTint="#FFFFFF"
-        android:padding="8dp" />
+        android:layout_below="@id/controls"
+        android:layout_marginTop="8dp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/groupSpinner"
-        android:layout_above="@+id/btnSettings"
         android:layout_marginTop="8dp" />
-
-    <Button
-        android:id="@+id/btnSettings"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:text="Ustawienia"
-        android:backgroundTint="#444444" />
 
 </RelativeLayout>
