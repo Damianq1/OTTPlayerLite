@@ -1,138 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:background="#202020"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#121212"
+    android:padding="16dp">
 
     <LinearLayout
-        android:orientation="vertical"
-        android:padding="12dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
         <TextView
-            android:text="Playlist i EPG"
-            android:textStyle="bold"
-            android:textColor="#FFFFFF"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <EditText
-            android:id="@+id/settingsPlaylistUrl"
-            android:hint="URL playlisty M3U"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#888888"
-            android:background="@android:drawable/edit_text"
-            android:inputType="textUri"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp" />
-
-        <EditText
-            android:id="@+id/settingsEpgUrl"
-            android:hint="URL EPG (opcjonalnie)"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#888888"
-            android:background="@android:drawable/edit_text"
-            android:inputType="textUri"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp" />
-
-        <Button
-            android:id="@+id/settingsSaveButton"
-            android:text="Zapisz"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp" />
+            android:text="Tryb User-Agent"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:layout_marginBottom="8dp"/>
+
+        <RadioGroup
+            android:id="@+id/groupUserAgent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <RadioButton android:id="@+id/radioDefault" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Domyślny (OTT)" android:textColor="#FFFFFF"/>
+            <RadioButton android:id="@+id/radioVLC" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="VLC Player" android:textColor="#FFFFFF"/>
+            <RadioButton android:id="@+id/radioChrome" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Chrome (Android)" android:textColor="#FFFFFF"/>
+            <RadioButton android:id="@+id/radioCustom" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Własny" android:textColor="#FFFFFF"/>
+        </RadioGroup>
+
+        <EditText
+            android:id="@+id/editCustomUA"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Wpisz własny User-Agent"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#666666"
+            android:layout_marginTop="8dp"
+            android:visibility="visible"/>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="#444444"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="12dp" />
+            android:background="#333333"
+            android:layout_marginVertical="16dp"/>
 
         <TextView
-            android:text="User-Agent"
-            android:textStyle="bold"
-            android:textColor="#FFFFFF"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <RadioButton
-            android:id="@+id/uaDefault"
-            android:text="Domyślny"
-            android:textColor="#FFFFFF"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <RadioButton
-            android:id="@+id/uaVLC"
-            android:text="VLC"
-            android:textColor="#FFFFFF"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <RadioButton
-            android:id="@+id/uaChrome"
-            android:text="Chrome"
-            android:textColor="#FFFFFF"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <RadioButton
-            android:id="@+id/uaCustom"
-            android:text="Własny"
-            android:textColor="#FFFFFF"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <EditText
-            android:id="@+id/uaCustomInput"
-            android:hint="Własny User-Agent"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#888888"
-            android:background="@android:drawable/edit_text"
-            android:inputType="text"
-            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp" />
+            android:text="Tryb Odtwarzacza"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:layout_marginBottom="8dp"/>
 
-        <View
+        <RadioGroup
+            android:id="@+id/groupPlayerMode"
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#444444"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="12dp" />
-
-        <TextView
-            android:text="Odtwarzacz"
-            android:textStyle="bold"
-            android:textColor="#FFFFFF"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <RadioButton
-            android:id="@+id/playerAuto"
-            android:text="Auto (zalecane)"
-            android:textColor="#FFFFFF"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <RadioButton
-            android:id="@+id/playerExo"
-            android:text="Wbudowany (ExoPlayer)"
-            android:textColor="#FFFFFF"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <RadioButton
-            android:id="@+id/playerExternal"
-            android:text="Zewnętrzny odtwarzacz"
-            android:textColor="#FFFFFF"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content">
+            <RadioButton android:id="@+id/radioAuto" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Automatyczny" android:textColor="#FFFFFF"/>
+            <RadioButton android:id="@+id/radioExo" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Tylko ExoPlayer" android:textColor="#FFFFFF"/>
+            <RadioButton android:id="@+id/radioExternal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Zewnętrzny (VLC/MX)" android:textColor="#FFFFFF"/>
+        </RadioGroup>
 
     </LinearLayout>
 </ScrollView>
