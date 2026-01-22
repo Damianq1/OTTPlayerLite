@@ -2,79 +2,77 @@ package com.ottplayerlite
 
 import android.net.Uri
 import android.os.Bundle
-import android.widget.Toast
+import android.view.View
+import android.webkit.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.media3.common.MediaItem
-import androidx.media3.common.MimeTypes
-import androidx.media3.common.Player
-import androidx.media3.common.PlaybackException
-import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.common.*
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import org.videolan.libvlc.LibVLC
+import org.videolan.libvlc.Media
+import org.videolan.libvlc.util.VLCVideoLayout
 import com.ottplayerlite.utils.UserAgentManager
-import com.ottplayerlite.utils.Logger
 
 class PlayerActivity : AppCompatActivity() {
-    private var player: ExoPlayer? = null
-    private var currentUrl: String = ""
-    private var attempt = 0
+    private var exoPlayer: ExoPlayer? = null
+    private var vlcPlayer: org.videolan.libvlc.MediaPlayer? = null
+    private var libVLC: LibVLC? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_player)
-        currentUrl = intent.getStringExtra("url") ?: ""
-        startPlayback()
-    }
+        val url = intent.getStringExtra("url") ?: ""
+        val engine = getSharedPreferences("settings", MODE_PRIVATE).getString("engine", "MEDIA3")
 
-    private fun startPlayback() {
-        player?.release()
-
-        val ua = when(attempt) {
-            0 -> UserAgentManager.getUserAgent(this)
-            1 -> "VLC/3.0.18 LibVLC/3.0.18"
-            else -> "Mozilla/5.0 (Linux; Android 10; TV) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
+        when (engine) {
+            "VLC" -> startVlc(url)
+            "WEB" -> startWebPlayer(url)
+            else -> startMedia3(url)
         }
-
-        val dsFactory = DefaultHttpDataSource.Factory()
-            .setUserAgent(ua)
-            .setAllowCrossProtocolRedirects(true)
-
-        // Budujemy MediaItem z wymuszeniem typu HLS dla m3u8
-        val mediaItem = MediaItem.Builder()
-            .setUri(currentUrl)
-            .setMimeType(if (currentUrl.contains("m3u8")) MimeTypes.APPLICATION_M3U8 else null)
-            .build()
-
-        player = ExoPlayer.Builder(this)
-            .setMediaSourceFactory(DefaultMediaSourceFactory(dsFactory))
-            .build().apply {
-                findViewById<androidx.media3.ui.PlayerView>(R.id.playerView).player = this
-                setMediaItem(mediaItem)
-                prepare()
-                playWhenReady = true
-
-                addListener(object : Player.Listener {
-                    override fun onPlayerError(error: PlaybackException) {
-                        Logger.log("Błąd odtwarzania: ${error.message}")
-                        if (attempt < 2) {
-                            attempt++
-                            startPlayback()
-                        } else {
-                            Toast.makeText(this@PlayerActivity, "Błąd strumienia. Spróbuj zmienić User-Agent w ustawieniach.", Toast.LENGTH_LONG).show()
-                            finish()
-                        }
-                    }
-                })
-            }
     }
 
-    override fun onPause() {
-        super.onPause()
-        player?.pause()
+    private fun startMedia3(url: String) {
+        val pv = findViewById<androidx.media3.ui.PlayerView>(R.id.playerView)
+        pv.visibility = View.VISIBLE
+        exoPlayer = ExoPlayer.Builder(this).build().apply {
+            pv.player = this
+            setMediaItem(MediaItem.fromUri(url))
+            prepare()
+            play()
+        }
+    }
+
+    private fun startVlc(url: String) {
+        val vlcLayout = findViewById<VLCVideoLayout>(R.id.vlcLayout)
+        vlcLayout.visibility = View.VISIBLE
+        libVLC = LibVLC(this, arrayListOf("-vvv"))
+        vlcPlayer = org.videolan.libvlc.MediaPlayer(libVLC)
+        vlcPlayer?.attachViews(vlcLayout, null, false, false)
+        val media = Media(libVLC, Uri.parse(url))
+        vlcPlayer?.media = media
+        vlcPlayer?.play()
+    }
+
+    private fun startWebPlayer(url: String) {
+        val webView = findViewById<WebView>(R.id.webViewPlayer)
+        webView.visibility = View.VISIBLE
+        webView.settings.apply {
+            javaScriptEnabled = true
+            domStorageEnabled = true
+            mediaPlaybackRequiresUserGesture = false
+            userAgentString = UserAgentManager.getUserAgent(this@PlayerActivity)
+        }
+        webView.webChromeClient = WebChromeClient()
+        webView.webViewClient = object : WebViewClient() {
+            override fun onReceivedSslError(v: WebView?, h: SslErrorHandler?, e: android.net.http.SslError?) { h?.proceed() }
+        }
+        val html = "<html><body style='margin:0;padding:0;background:#000;'><video width='100%' height='100%' controls autoplay><source src='$url'></video></body></html>"
+        webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null)
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        player?.release()
+        exoPlayer?.release()
+        vlcPlayer?.release()
+        libVLC?.release()
     }
 }

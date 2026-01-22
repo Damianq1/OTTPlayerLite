@@ -52,6 +52,7 @@ class SettingsActivity : AppCompatActivity() {
                 R.id.radioAuto -> UserAgentManager.PLAYER_AUTO
                 R.id.radioExo -> UserAgentManager.PLAYER_EXO
                 R.id.radioExternal -> UserAgentManager.PLAYER_EXTERNAL
+        val radioWeb = findViewById<android.widget.RadioButton>(R.id.radioWeb)
                 else -> UserAgentManager.PLAYER_AUTO
             }
             UserAgentManager.setPlayerMode(this, mode)
