@@ -4,9 +4,14 @@ import android.content.Context
 
 object ModuleManager {
     fun isEnabled(context: Context, moduleKey: String): Boolean {
-        // Używamy pełnej ścieżki do wygenerowanej klasy
-        if (com.ottplayerlite.BuildConfig.FLAVOR == "lite") {
-            if (moduleKey == "stats" || moduleKey == "pip" || moduleKey == "remote") return false
+        // Sprawdzamy wersję po ID pakietu zamiast BuildConfig
+        val isLite = context.packageName.endsWith(".lite")
+        
+        if (isLite) {
+            // Blokada ciężkich modułów dla wersji Lite
+            if (moduleKey == "stats" || moduleKey == "pip" || moduleKey == "remote" || moduleKey == "recording") {
+                return false
+            }
         }
         
         val prefs = context.getSharedPreferences("Modules", Context.MODE_PRIVATE)

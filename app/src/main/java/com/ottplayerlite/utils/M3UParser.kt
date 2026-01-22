@@ -9,9 +9,10 @@ import java.net.URL
 object M3UParser {
     fun fetchAndParse(context: Context, url: String): List<Channel> {
         val connection = URL(url).openConnection() as HttpURLConnection
+        connection.connectTimeout = 5000
+        connection.readTimeout = 5000
         
         if (ModuleManager.isEnabled(context, "emulation")) {
-            // Używamy zaktualizowanej metody z UserAgentManager
             val agent = UserAgentManager.getStringAgent(context)
             connection.setRequestProperty("User-Agent", agent)
             connection.setRequestProperty("X-User-MAC", "00:1A:79:00:00:00")
