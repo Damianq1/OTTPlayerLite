@@ -22,6 +22,7 @@ class MainActivity : AppCompatActivity() {
 
         btnLoad.setOnClickListener {
             val url = urlInput.text.toString()
+            com.ottplayerlite.utils.Logger.log("Próba załadowania: $url")
             // Tu Twoja logika parsera...
         }
 

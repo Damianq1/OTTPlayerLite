@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 
 object Logger {
-    fun init(context: Context) {
+    fun init() {
         Log.d("OTT_APP", "Logger zainicjalizowany")
     }
 
