@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btnAddUrl).setOnClickListener { addPlaylistUrl() }
         findViewById<Button>(R.id.btnAddFile).setOnClickListener { pickPlaylistFile() }
 
-        PlaylistManager.loadAllChannels(this); loadChannels()
+        loadChannels()
     }
 
     private fun addPlaylistUrl() {
@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
                 val url = input.text.toString().trim()
                 if (url.isNotEmpty()) {
                     PlaylistManager.addPlaylist(this, url)
-                    PlaylistManager.loadAllChannels(this); loadChannels()
+                    loadChannels()
                 }
             }
             .setNegativeButton("Anuluj", null)
@@ -75,12 +75,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun PlaylistManager.loadAllChannels(this); loadChannels() {
+    private fun loadChannels() {
         Thread {
-            // Pobieramy ostatnio dodany URL z managera
-            val lastUrl = PlaylistManager.getPlaylists(this).lastOrNull() ?: ""
-            if (lastUrl.isNotEmpty()) {
-                val channels = M3UParser.parse(lastUrl)
+            val playlists = PlaylistManager.getPlaylists(this)
+            if (playlists.isNotEmpty()) {
+                val channels = mutableListOf<Channel>()
+                playlists.forEach { url ->
+                    channels.addAll(M3UParser.parse(url, this))
+                }
                 runOnUiThread {
                     allChannels = channels
                     updateGroups()
@@ -93,16 +95,20 @@ class MainActivity : AppCompatActivity() {
     private fun updateGroups() {
         groups = listOf("Wszystkie") + allChannels.map { it.group ?: "Inne" }.distinct()
         categoryContainer.removeAllViews()
-        groups.forEach { group ->
+        groups.forEach { groupName ->
             val view = LayoutInflater.from(this).inflate(R.layout.item_category, categoryContainer, false) as TextView
-            view.text = group
-            view.setOnClickListener { updateList(group) }
+            view.text = groupName
+            view.setOnClickListener { updateList(groupName) }
             categoryContainer.addView(view)
         }
     }
 
-    private fun updateList(group: String) {
-        val filtered = if (group == "Wszystkie") allChannels else allChannels.filter { it.group == group }
+    private fun updateList(groupName: String) {
+        val filtered = if (groupName == "Wszystkie") {
+            allChannels
+        } else {
+            allChannels.filter { it.group == groupName }
+        }
         recycler.adapter = ChannelAdapter(filtered) { channel ->
             val intent = Intent(this, PlayerActivity::class.java)
             intent.putExtra("url", channel.url)
