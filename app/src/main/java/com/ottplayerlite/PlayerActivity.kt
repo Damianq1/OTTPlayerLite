@@ -11,6 +11,7 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.PlayerView
 import java.io.File
 import java.io.FileOutputStream
@@ -21,7 +22,6 @@ class PlayerActivity : AppCompatActivity() {
     private var player: ExoPlayer? = null
     private lateinit var playerView: PlayerView
     private var currentIndex = 0
-    private var isRecording = false
     private val handler = Handler(Looper.getMainLooper())
 
     companion object { var playlist: List<Channel> = listOf() }
@@ -42,11 +42,17 @@ class PlayerActivity : AppCompatActivity() {
         currentIndex = index
         val channel = playlist[index]
         
-        player = ExoPlayer.Builder(this).build().apply {
-            setMediaSource(DefaultMediaSourceFactory(this).createMediaSource(MediaItem.fromUri(channel.url)))
-            prepare()
-            play()
-        }
+        // Używamy Factory, która automatycznie obsłuży HLS (.m3u8) i DASH
+        val mediaSourceFactory = DefaultMediaSourceFactory(this)
+        
+        player = ExoPlayer.Builder(this)
+            .setMediaSourceFactory(mediaSourceFactory)
+            .build()
+            .apply {
+                setMediaItem(MediaItem.fromUri(channel.url))
+                prepare()
+                play()
+            }
         playerView.player = player
         
         if (ModuleManager.isEnabled(this, "stats")) startStatsMonitor()
@@ -54,10 +60,11 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun showOverlay(channel: Channel) {
-        val overlay = findViewById<View>(R.id.channelOverlay)
-        findViewById<TextView>(R.id.channelName).text = channel.name
+        val overlay = findViewById<View>(R.id.channelOverlay) ?: return
+        findViewById<TextView>(R.id.channelName)?.text = channel.name
         overlay.visibility = View.VISIBLE
-        handler.postDelayed({ overlay.visibility = View.GONE }, 5000)
+        handler.removeCallbacksAndMessages("overlay")
+        handler.postAtTime({ overlay.visibility = View.GONE }, "overlay", SystemClock.uptimeMillis() + 5000)
     }
 
     private fun startStatsMonitor() {
@@ -65,11 +72,12 @@ class PlayerActivity : AppCompatActivity() {
             override fun run() {
                 val format = player?.videoFormat
                 if (format != null) {
-                    findViewById<View>(R.id.statsContainer).visibility = View.VISIBLE
-                    findViewById<TextView>(R.id.txtResolution).text = "Res: ${format.width}x${format.height}"
-                    findViewById<TextView>(R.id.txtFps).apply {
-                        text = "FPS: ${format.frameRate.toInt()}"
-                        setTextColor(if (format.frameRate < 10) Color.RED else Color.GREEN)
+                    findViewById<View>(R.id.statsContainer)?.visibility = View.VISIBLE
+                    findViewById<TextView>(R.id.txtResolution)?.text = "Res: ${format.width}x${format.height}"
+                    findViewById<TextView>(R.id.txtFps)?.apply {
+                        val fps = format.frameRate.toInt()
+                        text = "FPS: $fps"
+                        setTextColor(if (fps < 10) Color.RED else Color.GREEN)
                     }
                 }
                 handler.postDelayed(this, 2000)
@@ -79,7 +87,11 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onUserLeaveHint() {
         if (ModuleManager.isEnabled(this, "pip")) {
-            enterPictureInPictureMode(PictureInPictureParams.Builder().setAspectRatio(Rational(16, 9)).build())
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                enterPictureInPictureMode(PictureInPictureParams.Builder()
+                    .setAspectRatio(Rational(16, 9))
+                    .build())
+            }
         }
     }
 
