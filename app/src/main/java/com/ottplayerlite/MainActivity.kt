@@ -10,23 +10,22 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.*
 import java.net.URL
+import com.ottplayerlite.utils.M3UParser
 
 class MainActivity : AppCompatActivity() {
     private var allChannels = listOf<Channel>()
-    private var filteredChannels = listOf<Channel>()
     private lateinit var recyclerView: RecyclerView
-    private val prefs by lazy { getSharedPreferences("OTT_DATA", Context.MODE_PRIVATE) }
+    
+    // Ujednolicony dostęp do ustawień
+    private val prefs by lazy { getSharedPreferences("ULTIMATE_PREFS", Context.MODE_PRIVATE) }
     private var remoteServer: RemoteServer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Start serwera na porcie 8080
-        try {
-            remoteServer = RemoteServer(this, 8080)
-            remoteServer?.start()
-        } catch (e: Exception) { e.printStackTrace() }
+        // Serwer zdalny (port 8080)
+        startRemoteServer()
 
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -38,52 +37,70 @@ class MainActivity : AppCompatActivity() {
         loadPlaylist()
     }
 
+    private fun startRemoteServer() {
+        try {
+            remoteServer = RemoteServer(this, 8080)
+            remoteServer?.start()
+        } catch (e: Exception) { e.printStackTrace() }
+    }
+
     private fun loadPlaylist() {
-        val host = prefs.getString("host", "") ?: ""
-        if (host.isEmpty()) return
+        // Zmienione z 'host' na 'm3u_url' dla spójności z SettingsActivity
+        val m3uUrl = prefs.getString("m3u_url", "") ?: ""
+        if (m3uUrl.isEmpty()) {
+            Toast.makeText(this, "Skonfiguruj URL w ustawieniach", Toast.LENGTH_LONG).show()
+            return
+        }
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val content = URL(host).readText()
-                allChannels = parseM3U(content)
+                val content = URL(m3uUrl).readText()
+                // Używamy naszego nowego, potężnego parsera
+                allChannels = M3UParser.parse(content)
+                
                 withContext(Dispatchers.Main) {
                     PlayerActivity.playlist = allChannels
-                    recyclerView.adapter = ChannelAdapter(allChannels) { channel ->
+                    
+                    val adapter = ChannelAdapter(allChannels) { channel ->
                         startPlayer(channel.url)
                     }
+                    recyclerView.adapter = adapter
                     
-                    val lastUrl = prefs.getString("last_channel_url", "")
-                    if (!lastUrl.isNullOrEmpty() && allChannels.any { it.url == lastUrl }) {
-                        startPlayer(lastUrl)
-                    }
+                    // Funkcja Resume: Jeśli użytkownik włączył aplikację, wróć do ostatniego kanału
+                    autoResumeLastChannel()
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@MainActivity, "Błąd listy", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, "Błąd pobierania listy", Toast.LENGTH_SHORT).show()
                 }
+            }
+        }
+    }
+
+    private fun autoResumeLastChannel() {
+        val lastUrl = prefs.getString("last_channel_url", "")
+        if (!lastUrl.isNullOrEmpty()) {
+            val lastChannel = allChannels.find { it.url == lastUrl }
+            if (lastChannel != null) {
+                // Opcjonalnie: możesz dodać powiadomienie "Wznawianie ostatniego kanału..."
+                startPlayer(lastUrl)
             }
         }
     }
 
     private fun startPlayer(url: String) {
+        // Zapisujemy URL dla funkcji Resume
         prefs.edit().putString("last_channel_url", url).apply()
+        
         val intent = Intent(this, PlayerActivity::class.java)
         intent.putExtra("url", url)
         startActivity(intent)
     }
 
-    private fun parseM3U(m3u: String): List<Channel> {
-        val list = mutableListOf<Channel>()
-        var name = ""; var logo = ""
-        m3u.lineSequence().forEach { line ->
-            if (line.startsWith("#EXTINF")) {
-                name = line.substringAfter(",").trim()
-                logo = line.substringAfter("tvg-logo=\"", "").substringBefore("\"", "")
-            } else if (line.startsWith("http")) {
-                list.add(Channel(name, line.trim(), logo, "TV"))
-            }
-        }
-        return list
+    override fun onResume() {
+        super.onResume()
+        // Odśwież listę przy powrocie z ustawień (jeśli URL się zmienił)
+        loadPlaylist()
     }
 
     override fun onDestroy() {

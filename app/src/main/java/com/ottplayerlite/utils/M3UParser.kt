@@ -1,36 +1,39 @@
 package com.ottplayerlite.utils
 
-import android.content.Context
 import com.ottplayerlite.Channel
-import com.ottplayerlite.ModuleManager
-import java.net.HttpURLConnection
-import java.net.URL
 
 object M3UParser {
-    fun fetchAndParse(context: Context, url: String): List<Channel> {
-        val connection = URL(url).openConnection() as HttpURLConnection
-        connection.connectTimeout = 5000
-        connection.readTimeout = 5000
-        
-        if (ModuleManager.isEnabled(context, "emulation")) {
-            val agent = UserAgentManager.getStringAgent(context)
-            connection.setRequestProperty("User-Agent", agent)
-            connection.setRequestProperty("X-User-MAC", "00:1A:79:00:00:00")
-        }
+    fun parse(m3uContent: String): List<Channel> {
+        val channels = mutableListOf<Channel>()
+        val lines = m3uContent.lines()
+        var currentInfo: String? = null
 
-        val content = connection.inputStream.bufferedReader().use { it.readText() }
-        val list = mutableListOf<Channel>()
-        var name = ""; var logo = ""; var group = ""
-        
-        content.lineSequence().forEach { line ->
-            if (line.startsWith("#EXTINF")) {
-                name = line.substringAfter(",").trim()
-                logo = line.substringAfter("tvg-logo=\"", "").substringBefore("\"", "")
-                group = line.substringAfter("group-title=\"", "").substringBefore("\"", "")
-            } else if (line.startsWith("http")) {
-                list.add(Channel(name, line.trim(), logo, group))
+        for (line in lines) {
+            if (line.startsWith("#EXTINF:")) {
+                currentInfo = line
+            } else if (line.startsWith("http") && currentInfo != null) {
+                val name = currentInfo.substringAfterLast(",").trim()
+                val logo = regexValue(currentInfo, "tvg-logo")
+                val category = regexValue(currentInfo, "group-title")
+                val tvgId = regexValue(currentInfo, "tvg-id")
+                val catchup = regexValue(currentInfo, "catchup")
+
+                channels.add(Channel(
+                    name = name,
+                    url = line.trim(),
+                    logoUrl = logo,
+                    category = category,
+                    tvgId = tvgId,
+                    catchupType = if (catchup.isNotEmpty()) catchup else "default"
+                ))
+                currentInfo = null
             }
         }
-        return list
+        return channels
+    }
+
+    private fun regexValue(line: String, key: String): String {
+        val pattern = "$key=\"(.*?)\"".toRegex()
+        return pattern.find(line)?.groupValues?.get(1) ?: ""
     }
 }

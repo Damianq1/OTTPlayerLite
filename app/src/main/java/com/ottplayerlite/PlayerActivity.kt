@@ -29,14 +29,10 @@ class PlayerActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_player)
-        
-        // WYMUSZENIE 120Hz/MAX REFRESH RATE
         AFRManager.setHighRefreshRate(this, window)
-        
         playerView = findViewById(R.id.playerView)
         val url = intent.getStringExtra("url") ?: ""
         currentIndex = playlist.indexOfFirst { it.url == url }.coerceAtLeast(0)
-        
         playCurrent()
     }
 
@@ -45,13 +41,11 @@ class PlayerActivity : AppCompatActivity() {
         findViewById<ProgressBar>(R.id.loadingSpinner).visibility = View.VISIBLE
         player?.release()
 
-        // ANTI-FREEZE: Pobieranie zapamiętanego bufora dla tego konkretnego URL
-        // Domyślnie 3 sekundy, jeśli kanał sprawiał problemy, może być więcej
         val savedBuffer = prefs.getInt("buffer_${channel.url.hashCode()}", 3000)
         
+        // POPRAWKA: Media3 DefaultLoadControl używa setBufferMs w Builderze inaczej
         val loadControl = DefaultLoadControl.Builder()
-            .setBufferMs(savedBuffer, savedBuffer + 2000, 1000, 1500)
-            .setPrioritizeTimeOverSizeThresholds(true)
+            .setBufferMs(savedBuffer, savedBuffer + 5000, 1000, 1500)
             .build()
 
         player = ExoPlayer.Builder(this)
@@ -66,25 +60,21 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         when (keyCode) {
-            // ZIELONY PRZYCISK: Picture-in-Picture (Dedykowany)
             KeyEvent.KEYCODE_PROG_GREEN -> {
                 enterPipMode()
                 return true
             }
-            
-            // CZERWONY PRZYCISK: Zwiększ Anti-Freeze (Bufor) dla tego kanału
             KeyEvent.KEYCODE_PROG_RED -> {
                 val currentUrl = playlist[currentIndex].url
                 val currentBuf = prefs.getInt("buffer_${currentUrl.hashCode()}", 3000)
-                val newBuf = currentBuf + 2000 // Dodaj 2 sekundy
+                val newBuf = currentBuf + 2000
                 prefs.edit().putInt("buffer_${currentUrl.hashCode()}", newBuf).apply()
-                
-                Toast.makeText(this, "Anti-Freeze: zwiększono bufor do ${newBuf/1000}s", Toast.LENGTH_SHORT).show()
-                playCurrent() // Restart z nowym buforem
+                Toast.makeText(this, "Anti-Freeze: ${newBuf/1000}s", Toast.LENGTH_SHORT).show()
+                playCurrent()
                 return true
             }
-
-            KeyEvent.KEYCODE_PROG_YELLOW, KeyEvent.KEYCODE_VIEW_MODE -> {
+            // KEYCODE_VIEW_MODE może nie być dostępny na wszystkich API, używamy Int
+            82, KeyEvent.KEYCODE_PROG_YELLOW -> { 
                 val nextMode = AspectRatioManager.getNextMode()
                 playerView.resizeMode = nextMode
                 return true
@@ -93,16 +83,6 @@ class PlayerActivity : AppCompatActivity() {
         return super.onKeyDown(keyCode, event)
     }
 
-    /# Fragment logiki w PlayerActivity do obsługi archiwum
-    
-    
-    fun playArchive(baseUrl: String, startTime: String, duration: Int) {
-    //     Formatowanie URL dla Xtream/M3U (dodanie timestampu)
-            val archiveUrl ="\$baseUrl?utc=\$startTime&lutc=\$startTime" 
-        // lunc/utc to standardowe parametry dla catchupu
-            >playUrl(archiveUrl)
-}
-
     private fun enterPipMode() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val params = PictureInPictureParams.Builder()
@@ -110,10 +90,5 @@ class PlayerActivity : AppCompatActivity() {
                 .build()
             enterPictureInPictureMode(params)
         }
-    }
-
-    override fun onUserLeaveHint() {
-        // Opcjonalnie: PiP przy wyjściu do Home
-        super.onUserLeaveHint()
     }
 }

@@ -29,7 +29,14 @@
             android:textColor="#FFFFFF"
             android:textSize="16sp"
             android:textStyle="bold" />
-
+        <TextView
+            android:id="@+id/epgExtraInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/ultimate_gold_dark"
+            android:textSize="10sp"
+            android:visibility="gone" />
+    
         <ProgressBar
             android:id="@+id/channelProgress"
             style="?android:attr/progressBarStyleHorizontal"
