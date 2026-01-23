@@ -3,18 +3,15 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:allowBackup="true"
-        android:icon="@android:drawable/ic_menu_slideshow"
+        android:icon="@mipmap/ic_launcher"
         android:label="Ultimate Player"
-        android:theme="@style/Theme.OTTPlayerLite"
+        android:theme="@style/Theme.AppCompat.NoActionBar"
         android:usesCleartextTraffic="true">
 
-        <activity
-            android:name="com.ottplayerlite.MainActivity"
+        <activity android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,23 +20,16 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name="com.ottplayerlite.PlayerActivity"
-            android:exported="false"
-            android:screenOrientation="landscape" />
-
-        <activity
-            android:name="com.ottplayerlite.SettingsActivity"
+        <activity 
+            android:name=".PlayerActivity"
+            android:supportsPictureInPicture="true"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:exported="false" />
 
-        <receiver
-            android:name="com.ottplayerlite.BootReceiver"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
+        <activity 
+            android:name=".EpgActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:exported="false" />
 
     </application>
 </manifest>
