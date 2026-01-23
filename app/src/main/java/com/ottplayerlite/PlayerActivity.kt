@@ -1,84 +1,57 @@
 package com.ottplayerlite
 
-import android.graphics.Color
-import android.os.*
-import android.view.KeyEvent
+import android.content.pm.ActivityInfo
+import android.os.Bundle
 import android.view.View
-import android.widget.*
+import android.view.WindowManager
+import androidx.annotation.OptIn
 import androidx.appcompat.app.AppCompatActivity
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import androidx.media3.datasource.DefaultHttpDataSource
-import androidx.media3.exoplayer.DefaultRenderersFactory
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.PlayerView
 
+@OptIn(UnstableApi::class)
 class PlayerActivity : AppCompatActivity() {
     private var player: ExoPlayer? = null
-    private lateinit var playerView: PlayerView
-    private var currentIndex = 0
-    private val handler = Handler(Looper.getMainLooper())
-
     companion object { var playlist: List<Channel> = listOf() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // WYMUSZENIE PEŁNEGO EKRANU I LANDSCAPE
+        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         setContentView(R.layout.activity_player)
-        playerView = findViewById(R.id.playerView)
-        val url = intent.getStringExtra("url") ?: ""
-        currentIndex = playlist.indexOfFirst { it.url == url }.coerceAtLeast(0)
-        playChannel(currentIndex)
-    }
 
-    private fun playChannel(index: Int) {
-        player?.release()
-        currentIndex = index
-        val channel = playlist[index]
-        
-        val renderersFactory = DefaultRenderersFactory(this)
-            .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
+        val playerView = findViewById<PlayerView>(R.id.playerView)
+        val streamUrl = intent.getStringExtra("url") ?: return
 
-        val dataSourceFactory = DefaultHttpDataSource.Factory()
-            .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-
-        player = ExoPlayer.Builder(this, renderersFactory)
-            .setMediaSourceFactory(DefaultMediaSourceFactory(this).setDataSourceFactory(dataSourceFactory))
+        player = ExoPlayer.Builder(this)
+            .setSeekBackIncrementMs(10000)
+            .setSeekForwardIncrementMs(10000)
             .build()
-            .apply {
-                setMediaItem(MediaItem.fromUri(channel.url))
-                prepare()
-                play()
-            }
+            
         playerView.player = player
-        
-        if (ModuleManager.isEnabled(this, "stats")) startStatsMonitor()
-    }
+        playerView.keepScreenOn = true
 
-    private fun startStatsMonitor() {
-        handler.post(object : Runnable {
-            override fun run() {
-                val format = player?.videoFormat
-                if (format != null) {
-                    findViewById<View>(R.id.statsContainer)?.visibility = View.VISIBLE
-                    findViewById<TextView>(R.id.txtResolution)?.text = "Res: ${format.width}x${format.height}"
-                    findViewById<TextView>(R.id.txtFps)?.text = "FPS: ${format.frameRate.toInt()}"
-                }
-                handler.postDelayed(this, 2000)
+        val mediaItem = MediaItem.fromUri(streamUrl)
+        player?.setMediaItem(mediaItem)
+        player?.prepare()
+        player?.play()
+
+        // AUTO-RETRY I OBSŁUGA BŁĘDÓW (PRZEŁĄCZANIE)
+        player?.addListener(object : Player.Listener {
+            override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
+                // Tu można dodać logikę przełączania na link zapasowy
+                player?.prepare() // Próba ponownego załadowania
             }
         })
-    }
-
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_DPAD_UP) { playChannel((currentIndex + 1) % playlist.size); return true }
-        if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) { playChannel((currentIndex - 1 + playlist.size) % playlist.size); return true }
-        if (keyCode == KeyEvent.KEYCODE_BACK) { finish(); return true }
-        return super.onKeyDown(keyCode, event)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         player?.release()
-        handler.removeCallbacksAndMessages(null)
     }
 }

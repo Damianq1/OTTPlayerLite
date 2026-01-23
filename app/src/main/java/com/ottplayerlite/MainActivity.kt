@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.*
+import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -41,15 +42,12 @@ class MainActivity : AppCompatActivity() {
             val h = editHost.text.toString().trim()
             val u = editUser.text.toString().trim()
             val p = editPass.text.toString().trim()
-            
             prefs.edit().putString("host", h).putString("user", u).putString("pass", p).apply()
 
             when {
-                h.contains("m3u", ignoreCase = true) -> fetchData(h, isXtream = false, isStalker = h.contains("iptvprivateserver"))
-                else -> {
-                    val apiUrl = "$h/player_api.php?username=$u&password=$p&action=get_live_streams"
-                    fetchData(apiUrl, isXtream = true, isStalker = false)
-                }
+                h.contains("p2.iptvprivateserver.tv") || h.contains("/c/") -> loadStalker(h, u)
+                h.contains("m3u") || h.contains("m3u8") -> fetchData(h, type = "M3U")
+                else -> fetchData("$h/player_api.php?username=$u&password=$p&action=get_live_streams", type = "XTREAM")
             }
         }
 
@@ -60,23 +58,54 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun fetchData(urlStr: String, isXtream: Boolean, isStalker: Boolean) {
+    private fun loadStalker(host: String, mac: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val conn = URL(urlStr).openConnection() as HttpURLConnection
-                if (isStalker) {
-                    val mac = prefs.getString("user", "")
-                    conn.setRequestProperty("Cookie", "mac=$mac")
-                    conn.setRequestProperty("User-Agent", "Mozilla/5.0 (MAG200; STB)")
-                }
-                val data = conn.inputStream.bufferedReader().use { it.readText() }
-                allChannels = if (isXtream) parseXtream(data) else parseM3U(data)
-                withContext(Dispatchers.Main) {
-                    PlayerActivity.playlist = allChannels
-                    updateAdapter(allChannels)
-                }
+                // 1. Handshake & Get Token
+                val handshakeUrl = "$host?type=stb&action=handshake"
+                val tokenJson = stalkerRequest(handshakeUrl, mac)
+                val token = JSONObject(tokenJson).getJSONObject("js").getString("token")
+
+                // 2. Get Channels
+                val channelsUrl = "$host?type=itv&action=get_all_channels&token=$token"
+                val data = stalkerRequest(channelsUrl, mac)
+                allChannels = parseStalker(data, host, token)
+
+                withContext(Dispatchers.Main) { updateAdapter(allChannels) }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) { Toast.makeText(this@MainActivity, "Błąd!", Toast.LENGTH_SHORT).show() }
+                withContext(Dispatchers.Main) { Toast.makeText(this@MainActivity, "Błąd MAC Portalu!", Toast.LENGTH_SHORT).show() }
+            }
+        }
+    }
+
+    private fun stalkerRequest(urlStr: String, mac: String): String {
+        val conn = URL(urlStr).openConnection() as HttpURLConnection
+        conn.setRequestProperty("User-Agent", "Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG200 sb2 embedded Safari/533.3")
+        conn.setRequestProperty("X-User-Agent", "Model: MAG250; SW: 2.20.0")
+        conn.setRequestProperty("Cookie", "mac=$mac")
+        return conn.inputStream.bufferedReader().use { it.readText() }
+    }
+
+    private fun parseStalker(json: String, host: String, token: String): List<Channel> {
+        val list = mutableListOf<Channel>()
+        val arr = JSONObject(json).getJSONArray("js")
+        for (i in 0 until arr.length()) {
+            val obj = arr.getJSONObject(i)
+            val cmd = obj.getString("cmd").replace("ffmpeg ", "")
+            list.add(Channel(obj.getString("name"), cmd, obj.optString("logo"), obj.optString("tvg_name")))
+        }
+        return list
+    }
+
+    private fun fetchData(url: String, type: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val conn = URL(url).openConnection() as HttpURLConnection
+                val data = conn.inputStream.bufferedReader().use { it.readText() }
+                allChannels = if (type == "XTREAM") parseXtream(data) else parseM3U(data)
+                withContext(Dispatchers.Main) { updateAdapter(allChannels) }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) { Toast.makeText(this@MainActivity, "Błąd $type!", Toast.LENGTH_SHORT).show() }
             }
         }
     }
@@ -98,15 +127,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun parseXtream(json: String): List<Channel> {
         val list = mutableListOf<Channel>()
-        try {
-            val arr = org.json.JSONArray(json)
-            val h = prefs.getString("host", ""); val u = prefs.getString("user", ""); val p = prefs.getString("pass", "")
-            for (i in 0 until arr.length()) {
-                val obj = arr.getJSONObject(i)
-                val sUrl = "$h/live/$u/$p/${obj.getString("stream_id")}.ts"
-                list.add(Channel(obj.getString("name"), sUrl, obj.optString("stream_icon"), obj.optString("category_name")))
-            }
-        } catch (e: Exception) {}
+        val arr = org.json.JSONArray(json)
+        val h = prefs.getString("host", ""); val u = prefs.getString("user", ""); val p = prefs.getString("pass", "")
+        for (i in 0 until arr.length()) {
+            val obj = arr.getJSONObject(i)
+            val sUrl = "$h/live/$u/$p/${obj.getString("stream_id")}.ts"
+            list.add(Channel(obj.getString("name"), sUrl, obj.optString("stream_icon"), obj.optString("category_name")))
+        }
         return list
     }
 
@@ -116,6 +143,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateAdapter(list: List<Channel>) {
+        PlayerActivity.playlist = list
         recyclerView.adapter = ChannelAdapter(list) { channel ->
             startActivity(Intent(this, PlayerActivity::class.java).apply { putExtra("url", channel.url) })
         }
