@@ -1,55 +1,32 @@
 package com.ottplayerlite
 
-import android.util.Xml
+import java.net.URL
 import org.xmlpull.v1.XmlPullParser
-import java.io.InputStream
-import java.text.SimpleDateFormat
-import java.util.*
-import java.util.zip.GZIPInputStream
+import org.xmlpull.v1.XmlPullParserFactory
 
-data class EpgProgram(
-    val title: String,
-    val description: String,
-    val start: Long,
-    val stop: Long
-)
+class EpgParser {
+    fun parseEpg(url: String): Map<String, String> {
+        val epgData = mutableMapOf<String, String>()
+        try {
+            val stream = URL(url).openStream()
+            val factory = XmlPullParserFactory.newInstance()
+            val parser = factory.newPullParser()
+            parser.setInput(stream, "UTF-8")
 
-object EpgParser {
-    private val dateFormat = SimpleDateFormat("yyyyMMddHHmmss Z", Locale.US)
-
-    fun parseGz(inputStream: InputStream, targetChannelId: String): List<EpgProgram> {
-        val programs = mutableListOf<EpgProgram>()
-        val gzipStream = GZIPInputStream(inputStream)
-        val parser = Xml.newPullParser()
-        parser.setInput(gzipStream, "UTF-8")
-
-        var eventType = parser.eventType
-        var currentChannel: String?
-        
-        while (eventType != XmlPullParser.END_DOCUMENT) {
-            val name = parser.name
-            when (eventType) {
-                XmlPullParser.START_TAG -> {
-                    if (name == "programme") {
-                        currentChannel = parser.getAttributeValue(null, "channel")
-                        if (currentChannel == targetChannelId) {
-                            val start = dateFormat.parse(parser.getAttributeValue(null, "start"))?.time ?: 0
-                            val stop = dateFormat.parse(parser.getAttributeValue(null, "stop"))?.time ?: 0
-                            
-                            var title = ""; var desc = ""
-                            while (!(parser.next() == XmlPullParser.END_TAG && parser.name == "programme")) {
-                                if (parser.eventType == XmlPullParser.START_TAG) {
-                                    if (parser.name == "title") title = parser.nextText()
-                                    if (parser.name == "desc") desc = parser.nextText()
-                                }
-                            }
-                            programs.add(EpgProgram(title, desc, start, stop))
-                        }
-                    }
+            var eventType = parser.eventType
+            var currentChannelId = ""
+            
+            while (eventType != XmlPullParser.END_DOCUMENT) {
+                if (eventType == XmlPullParser.START_TAG && parser.name == "programme") {
+                    currentChannelId = parser.getAttributeValue(null, "channel")
+                } else if (eventType == XmlPullParser.START_TAG && parser.name == "title" && currentChannelId.isNotEmpty()) {
+                    epgData[currentChannelId] = parser.nextText()
                 }
+                eventType = parser.next()
             }
-            eventType = parser.next()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
-        return programs
+        return epgData
     }
 }

@@ -1,22 +1,79 @@
-// ... wewnątrz logiki odtwarzacza ...
-private fun getDataSourceFactory(): androidx.media3.datasource.DataSource.Factory {
-    val prefs = getSharedPreferences("OTT_DATA", Context.MODE_PRIVATE)
-    val useProxy = prefs.getBoolean("use_proxy", false)
-    val userAgent = prefs.getString("user_agent", "UltimatePlayer/1.0")
+package com.ottplayerlite
 
-    val httpFactory = androidx.media3.datasource.DefaultHttpDataSource.Factory()
-        .setUserAgent(userAgent)
+import android.content.Context
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.view.KeyEvent
+import android.view.View
+import android.view.WindowManager
+import android.widget.ProgressBar
+import androidx.appcompat.app.AppCompatActivity
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
+import java.net.InetSocketAddress
+import java.net.Proxy
 
-    if (useProxy) {
-        val host = prefs.getString("proxy_host", "")
-        val port = prefs.getString("proxy_port", "8080")?.toIntOrNull() ?: 8080
+class PlayerActivity : AppCompatActivity() {
+    companion object { var playlist: List<Channel> = listOf() }
+    private var player: ExoPlayer? = null
+    private var currentIndex = 0
+    private val prefs by lazy { getSharedPreferences("OTT_DATA", Context.MODE_PRIVATE) }
+    private val powerHandler = Handler(Looper.getMainLooper())
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_player)
         
-        if (!host.isNullOrEmpty()) {
-            // Konfiguracja proxy HTTP
-            val proxy = java.net.Proxy(java.net.Proxy.Type.HTTP, java.net.InetSocketAddress(host, port))
-            // ExoPlayer automatycznie obsłuży proxy przez bibliotekę Cronet lub OkHttp
-            // Tutaj stosujemy uproszczony model dla standardowego DefaultHttpDataSource
-        }
+        val url = intent.getStringExtra("url") ?: ""
+        currentIndex = playlist.indexOfFirst { it.url == url }.coerceAtLeast(0)
+        
+        playCurrent()
     }
-    return httpFactory
+
+    private fun playCurrent() {
+        findViewById<ProgressBar>(R.id.loadingSpinner).visibility = View.VISIBLE
+        player?.release()
+        
+        val channel = playlist[currentIndex]
+        prefs.edit().putString("last_channel_url", channel.url).apply()
+
+        player = ExoPlayer.Builder(this).build()
+        val playerView = findViewById<androidx.media3.ui.PlayerView>(R.id.playerView)
+        playerView.player = player
+        
+        player?.addListener(object : Player.Listener {
+            override fun onPlaybackStateChanged(state: Int) {
+                if (state == Player.STATE_READY) {
+                    findViewById<ProgressBar>(R.id.loadingSpinner).visibility = View.GONE
+                }
+            }
+        })
+
+        player?.setMediaItem(MediaItem.fromUri(channel.url))
+        player?.prepare()
+        player?.play()
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        when (keyCode) {
+            KeyEvent.KEYCODE_DPAD_UP -> { 
+                currentIndex = if (currentIndex > 0) currentIndex - 1 else playlist.size - 1
+                playCurrent()
+                return true 
+            }
+            KeyEvent.KEYCODE_DPAD_DOWN -> { 
+                currentIndex = (currentIndex + 1) % playlist.size
+                playCurrent()
+                return true 
+            }
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        player?.release()
+    }
 }

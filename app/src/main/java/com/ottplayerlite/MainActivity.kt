@@ -27,10 +27,10 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
-        loadPlaylistAndStartLast()
+        loadPlaylist()
     }
 
-    private fun loadPlaylistAndStartLast() {
+    private fun loadPlaylist() {
         val host = prefs.getString("host", "") ?: ""
         if (host.isEmpty()) return
 
@@ -39,12 +39,11 @@ class MainActivity : AppCompatActivity() {
                 val content = URL(host).readText()
                 allChannels = parseM3U(content)
                 withContext(Dispatchers.Main) {
-                    PlayerActivity.playlist = allChannels
+                    com.ottplayerlite.PlayerActivity.playlist = allChannels
                     recyclerView.adapter = ChannelAdapter(allChannels) { channel ->
                         startPlayer(channel.url)
                     }
-
-                    // Logika "Start on Last Channel"
+                    
                     val lastUrl = prefs.getString("last_channel_url", "")
                     if (!lastUrl.isNullOrEmpty() && allChannels.any { it.url == lastUrl }) {
                         startPlayer(lastUrl)
