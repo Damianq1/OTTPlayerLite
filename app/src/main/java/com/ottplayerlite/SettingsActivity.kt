@@ -2,7 +2,9 @@ package com.ottplayerlite
 
 import android.content.Context
 import android.os.Bundle
-import android.widget.*
+import android.widget.Button
+import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
 class SettingsActivity : AppCompatActivity() {
@@ -10,19 +12,25 @@ class SettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
-        val prefs = getSharedPreferences("OTT_SETTINGS", Context.MODE_PRIVATE)
-        val container = findViewById<LinearLayout>(R.id.modulesContainer)
+        val prefs = getSharedPreferences("OTT_DATA", Context.MODE_PRIVATE)
+        val editHost = findViewById<EditText>(R.id.editHost)
+        val editUser = findViewById<EditText>(R.id.editUser)
+        val editPass = findViewById<EditText>(R.id.editPass)
+        val btnSave = findViewById<Button>(R.id.btnSave)
 
-        val vlcSwitch = Switch(this).apply {
-            text = "Używaj silnika VLC (Lepsze kodeki)"
-            isChecked = prefs.getBoolean("use_vlc", true)
-            setTextColor(android.graphics.Color.WHITE)
-            setOnCheckedChangeListener { _, isChecked ->
-                prefs.edit().putBoolean("use_vlc", isChecked).apply()
+        editHost.setText(prefs.getString("host", ""))
+        editUser.setText(prefs.getString("user", ""))
+        editPass.setText(prefs.getString("pass", ""))
+
+        btnSave.setOnClickListener {
+            prefs.edit().apply {
+                putString("host", editHost.text.toString().trim())
+                putString("user", editUser.text.toString().trim())
+                putString("pass", editPass.text.toString().trim())
+                apply()
             }
+            Toast.makeText(this, "Konfiguracja zapisana", Toast.LENGTH_SHORT).show()
+            finish()
         }
-        container.addView(vlcSwitch)
-        
-        findViewById<Button>(R.id.btnSaveSettings).setOnClickListener { finish() }
     }
 }

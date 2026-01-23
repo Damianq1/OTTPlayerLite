@@ -1,76 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#121212"
-    android:padding="16dp">
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="#121212">
 
-    <LinearLayout
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="KONFIGURACJA PLAYLISTY"
+        android:textColor="#FFBB00"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="20dp"/>
+
+    <EditText
+        android:id="@+id/editHost"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:hint="Wklej link M3U / URL Portalu"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#888888"
+        android:backgroundTint="#FFBB00"
+        android:layout_marginBottom="10dp"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Ustawienia i Moduły"
-            android:textColor="#FFBB00"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="20dp" />
+    <EditText
+        android:id="@+id/editUser"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Użytkownik / MAC (opcjonalnie)"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#888888"
+        android:backgroundTint="#FFBB00"
+        android:layout_marginBottom="10dp"/>
 
-        <LinearLayout
-            android:id="@+id/modulesContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="20dp" />
+    <EditText
+        android:id="@+id/editPass"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Hasło (opcjonalnie)"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#888888"
+        android:backgroundTint="#FFBB00"
+        android:inputType="textPassword"
+        android:layout_marginBottom="30dp"/>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#333333"
-            android:layout_marginVertical="10dp" />
-
-        <LinearLayout
-            android:id="@+id/ipContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/txtDeviceIp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:text="IP Urządzenia: 0.0.0.0" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Port sterowania ADB:"
-                android:textColor="#AAAAAA"
-                android:layout_marginTop="10dp" />
-
-            <EditText
-                android:id="@+id/editAdbPort"
-                android:layout_width="100dp"
-                android:layout_height="wrap_content"
-                android:inputType="number"
-                android:textColor="#FFFFFF"
-                android:backgroundTint="#FFBB00"
-                android:text="5555" />
-        </LinearLayout>
-
-        <Button
-            android:id="@+id/btnSaveSettings"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
-            android:text="ZAPISZ I WRÓĆ"
-            android:backgroundTint="#FFBB00"
-            android:textColor="#000000" />
-
-    </LinearLayout>
-</ScrollView>
+    <Button
+        android:id="@+id/btnSave"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="ZAPISZ I ODŚWIEŻ"
+        android:backgroundTint="#FFBB00"
+        android:textColor="#000000"
+        android:textStyle="bold"/>
+        
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Wersja: Ultimate Player 1.0"
+        android:textColor="#444444"
+        android:gravity="center"
+        android:layout_marginTop="20dp"/>
+</LinearLayout>

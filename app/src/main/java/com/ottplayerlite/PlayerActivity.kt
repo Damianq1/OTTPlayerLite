@@ -1,84 +1,71 @@
 package com.ottplayerlite
 
-import android.content.pm.ActivityInfo
+import android.content.Context
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.View
-import android.view.WindowManager
 import android.widget.*
 import androidx.annotation.OptIn
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
-import kotlinx.coroutines.*
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import org.videolan.libvlc.LibVLC
 import org.videolan.libvlc.Media
 import org.videolan.libvlc.util.VLCVideoLayout
-import java.net.URL
-import java.text.SimpleDateFormat
-import java.util.*
 
 @OptIn(UnstableApi::class)
 class PlayerActivity : AppCompatActivity() {
-
-    companion object {
-        @JvmStatic
-        var playlist: List<Channel> = listOf()
-    }
+    companion object { var playlist: List<Channel> = listOf() }
 
     private var exoPlayer: ExoPlayer? = null
-    private var libVLC: LibVLC? = null
     private var vlcPlayer: org.videolan.libvlc.MediaPlayer? = null
+    private var libVLC: LibVLC? = null
     private var currentIndex = 0
-    private var isVlcActive = false
-    private var currentProgram: EpgProgram? = null
-    private val handler = Handler(Looper.getMainLooper())
+    private val playerPrefs by lazy { getSharedPreferences("PLAYER_MEM", Context.MODE_PRIVATE) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        @Suppress("DEPRECATION")
-        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         setContentView(R.layout.activity_player)
 
         val url = intent.getStringExtra("url") ?: ""
         currentIndex = playlist.indexOfFirst { it.url == url }.coerceAtLeast(0)
 
-        setupUI()
-        startPlayback(url)
-        startClock()
+        setupSideMenu()
+        playCurrent()
     }
 
-    private fun setupUI() {
-        val panel = findViewById<View>(R.id.controlsPanel)
-        val toggle = View.OnClickListener {
-            panel.visibility = if (panel.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+    private fun setupSideMenu() {
+        val rv = findViewById<RecyclerView>(R.id.sideChannelList)
+        rv.layoutManager = LinearLayoutManager(this)
+        rv.adapter = ChannelAdapter(playlist) { channel ->
+            currentIndex = playlist.indexOf(channel)
+            playCurrent()
+            findViewById<View>(R.id.sideMenu).visibility = View.GONE
         }
-        findViewById<View>(R.id.playerView).setOnClickListener(toggle)
-        findViewById<View>(R.id.vlcLayout).setOnClickListener(toggle)
-
-        findViewById<Button>(R.id.btnNext).setOnClickListener { playNext() }
-        findViewById<Button>(R.id.btnPrev).setOnClickListener { playPrev() }
         
-        findViewById<TextView>(R.id.txtProgramDesc).setOnClickListener {
-            currentProgram?.let { prog ->
-                AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
-                    .setTitle(prog.title)
-                    .setMessage(prog.description)
-                    .setPositiveButton("Zamknij", null)
-                    .show()
-            }
+        findViewById<ImageButton>(R.id.btnShowChannels).setOnClickListener {
+            val menu = findViewById<View>(R.id.sideMenu)
+            menu.visibility = if (menu.visibility == View.VISIBLE) View.GONE else View.VISIBLE
         }
     }
 
-    private fun startPlayback(url: String) {
-        isVlcActive = false
+    private fun playCurrent() {
+        releasePlayers()
+        val url = playlist[currentIndex].url
+        
+        // PAMIĘĆ PLAYERA: Jeśli wcześniej był tu błąd, użyj VLC od razu
+        if (playerPrefs.getBoolean(url, false)) {
+            startVLC(url)
+        } else {
+            startExo(url)
+        }
+    }
+
+    private fun startExo(url: String) {
         findViewById<View>(R.id.playerView).visibility = View.VISIBLE
         findViewById<View>(R.id.vlcLayout).visibility = View.GONE
         
@@ -86,70 +73,39 @@ class PlayerActivity : AppCompatActivity() {
         findViewById<androidx.media3.ui.PlayerView>(R.id.playerView).player = exoPlayer
         
         exoPlayer?.addListener(object : Player.Listener {
-            override fun onPlayerError(error: androidx.media3.common.PlaybackException) { switchToVLC(url) }
+            override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
+                // Zapamiętaj błąd dla tego URL i przełącz silnik
+                playerPrefs.edit().putBoolean(url, true).apply()
+                startVLC(url)
+            }
         })
-
+        
         exoPlayer?.setMediaItem(MediaItem.fromUri(url))
         exoPlayer?.prepare()
         exoPlayer?.play()
-
-        handler.postDelayed({
-            if (exoPlayer?.playbackState != Player.STATE_READY && !isVlcActive) switchToVLC(url)
-        }, 2500)
-        
-        loadEpg()
     }
 
-    private fun switchToVLC(url: String) {
-        if (isVlcActive) return
-        isVlcActive = true
+    private fun startVLC(url: String) {
         runOnUiThread {
-            exoPlayer?.release()
             findViewById<View>(R.id.playerView).visibility = View.GONE
             val vv = findViewById<VLCVideoLayout>(R.id.vlcLayout)
             vv.visibility = View.VISIBLE
             
-            // NAPRAWA ARTEFAKTÓW: Wyłączamy akcelerację sprzętową (Software Mode)
-            val options = arrayListOf("--avcodec-hw=none", "--network-caching=3000")
-            libVLC = LibVLC(this, options)
+            // Software decoding wymuszony dla czystego obrazu
+            libVLC = LibVLC(this, arrayListOf("--avcodec-hw=none", "--network-caching=3000"))
             vlcPlayer = org.videolan.libvlc.MediaPlayer(libVLC)
             vlcPlayer?.attachViews(vv, null, false, false)
             vlcPlayer?.media = Media(libVLC, Uri.parse(url))
             vlcPlayer?.play()
+            Toast.makeText(this, "Silnik: VLC (Soft)", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun loadEpg() {
-        val channel = playlist[currentIndex]
-        findViewById<TextView>(R.id.currentChannelTitle).text = channel.name
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val conn = URL("https://epg.ovh/plar.gz").openConnection()
-                val programs = EpgParser.parseGz(conn.getInputStream(), channel.name)
-                val now = System.currentTimeMillis()
-                currentProgram = programs.find { now in it.start..it.stop }
-                withContext(Dispatchers.Main) {
-                    currentProgram?.let {
-                        findViewById<TextView>(R.id.txtProgramDesc).text = "${it.title}\n\n${it.description}"
-                        findViewById<ProgressBar>(R.id.epgProgress).progress = ((now - it.start) * 100 / (it.stop - it.start)).toInt()
-                    }
-                }
-            } catch (e: Exception) {}
-        }
+    private fun releasePlayers() {
+        exoPlayer?.release(); exoPlayer = null
+        vlcPlayer?.release(); vlcPlayer = null
+        libVLC?.release(); libVLC = null
     }
 
-    private fun playNext() { currentIndex = (currentIndex + 1) % playlist.size; refresh() }
-    private fun playPrev() { currentIndex = (currentIndex - 1 + playlist.size) % playlist.size; refresh() }
-    private fun refresh() { exoPlayer?.release(); vlcPlayer?.release(); startPlayback(playlist[currentIndex].url) }
-    
-    private fun startClock() {
-        handler.post(object : Runnable {
-            override fun run() {
-                findViewById<TextView>(R.id.txtTime).text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
-                handler.postDelayed(this, 30000)
-            }
-        })
-    }
-
-    override fun onDestroy() { super.onDestroy(); exoPlayer?.release(); vlcPlayer?.release() }
+    override fun onDestroy() { super.onDestroy(); releasePlayers() }
 }
