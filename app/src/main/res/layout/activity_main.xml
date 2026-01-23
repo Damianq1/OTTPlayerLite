@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#121212">
 
     <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#121212">
-        
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -20,32 +20,39 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="OTT Player PRO"
+                android:text="OTT PLAYER ULTIMATE"
                 android:textColor="#FFBB00"
-                android:textSize="24sp"
+                android:textSize="20sp"
                 android:textStyle="bold" />
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/urlInputLayout"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:endIconMode="custom"
-                app:endIconDrawable="@android:drawable/ic_menu_set_as"
-                app:boxCornerRadiusTopStart="12dp"
-                app:boxCornerRadiusTopEnd="12dp"
-                app:boxCornerRadiusBottomStart="12dp"
-                app:boxCornerRadiusBottomEnd="12dp"
-                app:hintEnabled="false">
+                android:orientation="vertical"
+                android:layout_marginTop="10dp">
+                
+                <EditText android:id="@+id/editHost" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Host / M3U URL" android:textColor="#FFF" android:backgroundTint="#FFBB00" android:textSize="14sp"/>
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+                    <EditText android:id="@+id/editUser" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:hint="User" android:textColor="#FFF" android:backgroundTint="#FFBB00" android:textSize="14sp"/>
+                    <EditText android:id="@+id/editPass" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:hint="Pass" android:textColor="#FFF" android:inputType="textPassword" android:backgroundTint="#FFBB00" android:textSize="14sp"/>
+                </LinearLayout>
+            </LinearLayout>
 
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                app:startIconDrawable="@android:drawable/ic_menu_search"
+                app:startIconTint="#FFBB00"
+                app:boxBackgroundColor="#1E1E1E"
+                app:boxCornerRadiusTopStart="8dp"
+                app:boxCornerRadiusTopEnd="8dp">
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/urlInput"
+                    android:id="@+id/searchBar"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Wklej link M3U tutaj..."
-                    android:textColor="#FFFFFF"
-                    android:background="#1E1E1E"
-                    android:inputType="textUri" />
+                    android:hint="Szukaj kanału..."
+                    android:textColor="#FFFFFF" />
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
     </com.google.android.material.appbar.AppBarLayout>
@@ -54,20 +61,18 @@
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/appBar"
-        android:clipToPadding="false"
-        android:paddingBottom="80dp" />
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/btnLoad"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
+        android:layout_gravity="bottom|center_horizontal"
         android:layout_marginBottom="24dp"
-        android:text="ZAŁADUJ LISTĘ"
+        android:text="POŁĄCZ / ODŚWIEŻ"
         android:textColor="#000000"
         app:backgroundTint="#FFBB00"
-        app:icon="@android:drawable/ic_menu_rotate" />
+        app:icon="@android:drawable/ic_menu_rotate"
+        app:iconTint="#000000" />
 
-</RelativeLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

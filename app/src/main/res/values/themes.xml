@@ -3,5 +3,6 @@
         <item name="colorPrimary">#FFBB00</item>
         <item name="colorSecondary">#FFBB00</item>
         <item name="android:statusBarColor">#121212</item>
+        <item name="android:windowBackground">#121212</item>
     </style>
 </resources>
