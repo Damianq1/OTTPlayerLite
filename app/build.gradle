@@ -30,13 +30,15 @@ android {
             pickFirsts += 'lib/*/libc++_shared.so'
         }
         resources {
-            // Te linie usuwają pliki, które powodują konflikt w IncrementalSplitter
-            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+            // Te linie rozwiązują błąd IncrementalSplitterRunnable
             excludes += 'META-INF/DEPENDENCIES'
             excludes += 'META-INF/LICENSE*'
             excludes += 'META-INF/NOTICE*'
             excludes += 'META-INF/INDEX.LIST'
-            pickFirsts += 'META-INF/kotlinx-*.kotlin_module'
+            excludes += 'META-INF/kotlinx-*.kotlin_module'
+            excludes += 'META-INF/sdk_release.properties'
+            excludes += 'META-INF/gradle/incremental.annotation.processors'
+            pickFirsts += 'META-INF/library_release.xml'
         }
     }
 }
