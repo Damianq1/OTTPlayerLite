@@ -15,13 +15,6 @@ android {
         versionName "1.0-ULTIMATE"
     }
 
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -35,12 +28,15 @@ android {
         jniLibs {
             useLegacyPackaging = true
             pickFirsts += 'lib/*/libc++_shared.so'
-            pickFirsts += 'lib/*/libgnustl_shared.so'
         }
         resources {
+            // Te linie usuwają pliki, które powodują konflikt w IncrementalSplitter
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
             excludes += 'META-INF/DEPENDENCIES'
-            pickFirsts += 'META-INF/LICENSE*'
+            excludes += 'META-INF/LICENSE*'
+            excludes += 'META-INF/NOTICE*'
+            excludes += 'META-INF/INDEX.LIST'
+            pickFirsts += 'META-INF/kotlinx-*.kotlin_module'
         }
     }
 }

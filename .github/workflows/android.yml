@@ -11,9 +11,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout Repository
+      uses: actions/checkout@v4
 
-    - name: set up JDK 17
+    - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
         java-version: '17'
@@ -23,21 +24,24 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Clean and Prepare Ultimate Version
+    - name: Ultimate Clean & Prepare
       run: |
-        # Usuwamy ewentualne pliki powiązane z wersją lite, jeśli istnieją
-        find . -name "*lite*" -type f -not -path "./.git/*" -delete || true
+        # Usuwamy stare śmieci i duplikaty przed startem
         ./gradlew clean
+        # Usuwamy pliki, które mogą powodować konflikty nazw w paczce
+        find . -name "*lite*" -type f -delete || true
 
-    - name: Build Debug APK
-      run: ./gradlew assembleDebug
+    - name: Build Ultimate APK
+      # --no-daemon zapobiega błędom IncrementalSplitter w środowisku CI
+      run: ./gradlew assembleDebug --no-daemon --stacktrace
 
-    - name: Rename APK to Ultimate Name
+    - name: Rename and Prepare Artifact
       run: |
         mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/UltimatePlayer_Full.apk
 
-    - name: Upload Ultimate APK
+    - name: Upload Ultimate Player APK
       uses: actions/upload-artifact@v4
       with:
-        name: UltimatePlayer_Full
+        name: UltimatePlayer_App
         path: app/build/outputs/apk/debug/UltimatePlayer_Full.apk
+        retention-days: 5
