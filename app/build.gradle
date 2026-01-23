@@ -16,13 +16,21 @@ android {
     }
 
     buildTypes {
-        packagingOptions {
-            doNotStrip "**/*.so"
-        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        debug {
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    packagingOptions {
+        pickFirst 'lib/x86/libc++_shared.so'
+        pickFirst 'lib/x86_64/libc++_shared.so'
+        pickFirst 'lib/armeabi-v7a/libc++_shared.so'
+        pickFirst 'lib/arm64-v8a/libc++_shared.so'
+        doNotStrip "**/*.so"
     }
 
     compileOptions {
@@ -41,17 +49,17 @@ dependencies {
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     
-    // Media & VLC
+    // WorkManager - Kluczowy dla RecordingWorker
+    implementation "androidx.work:work-runtime-ktx:2.9.0"
+    
+    // Media3 (ExoPlayer)
     implementation 'androidx.media3:media3-exoplayer:1.2.1'
     implementation 'androidx.media3:media3-ui:1.2.1'
+    
+    // VLC
     implementation 'org.videolan.android:libvlc-all:3.6.0'
     
-    // Glide (Logo/Obrazy) - TEGO BRAKOWAŁO
+    // Obrazy i sieć
     implementation 'com.github.bumptech.glide:glide:4.16.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
-    
-    // NanoHTTPD (Serwer zdalny) - TEGO BRAKOWAŁO
-    implementation 'org.nanohttpd:nanohttpd:2.3.1'
-    
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
 }
