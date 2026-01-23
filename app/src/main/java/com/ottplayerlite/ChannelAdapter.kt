@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -17,6 +18,7 @@ class ChannelAdapter(
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val name: TextView = view.findViewById(R.id.channelName)
         val logo: ImageView = view.findViewById(R.id.channelLogo)
+        val progress: ProgressBar = view.findViewById(R.id.channelProgress)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -28,10 +30,13 @@ class ChannelAdapter(
         val channel = channels[position]
         holder.name.text = channel.name
         
+        // Pasek postępu EPG (symulacja lub dane jeśli dostępne)
+        holder.progress.visibility = View.VISIBLE
+        // Tutaj można dodać realną logikę obliczania czasu EPG
+        
         Glide.with(holder.itemView.context)
             .load(channel.logoUrl)
             .placeholder(android.R.drawable.ic_menu_gallery)
-            .error(android.R.drawable.ic_menu_report_image)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
             .into(holder.logo)
 
