@@ -7,12 +7,7 @@ plugins {
 android {
     namespace "com.ottplayerlite"
     flavorDimensions "version" 
-    productFlavors { 
-        lite { 
-            dimension "version" 
-            applicationIdSuffix ".lite" 
-            versionNameSuffix "-LITE" 
-        } 
+    productFlavors {
         pro { 
             dimension "version" 
             applicationIdSuffix ".pro" 

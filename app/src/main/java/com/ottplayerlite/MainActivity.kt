@@ -159,7 +159,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateAdapter(list: List<Channel>) {
-        PlayerActivity.Companion.playlist = list
+        PlayerActivity.playlist = list
         recyclerView.adapter = ChannelAdapter(list) { channel ->
             startActivity(Intent(this, PlayerActivity::class.java).apply { putExtra("url", channel.url) })
         }

@@ -41,13 +41,5 @@ jobs:
                -F chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
                -F caption="🚀 OTTPlayer PRO Debug Build - Wszystkie moduły aktywne" \
                https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendDocument
-
-      # Wysyłanie wersji LITE na Telegram (opcjonalnie)
-      - name: Send Lite Debug APK to Telegram
-        if: success()
-        run: |
-          FILE=$(find app/build/outputs/apk/lite/debug/ -name "*.apk" | head -n 1)
-          curl -F document=@"$FILE" \
-               -F chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-               -F caption="🧊 OTTPlayer LITE Debug Build - Wersja lekka" \
+               
                https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendDocument
