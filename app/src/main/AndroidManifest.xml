@@ -10,7 +10,7 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher_foreground"
         android:label="OttPlayer Lite"
-        android:theme="@style/Theme.OttPlayerLite"
+        android:theme="@style/Theme.OTTPlayerLite"
         android:usesCleartextTraffic="true">
         
         <activity android:name=".MainActivity" android:exported="true">

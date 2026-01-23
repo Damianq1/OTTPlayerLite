@@ -1,8 +1,7 @@
 <resources>
-    <style name="Theme.OttPlayerLite" parent="Theme.AppCompat.NoActionBar">
-        <item name="colorPrimary">#212121</item>
-        <item name="colorPrimaryDark">#000000</item>
-        <item name="colorAccent">#FF4081</item>
-        <item name="android:windowBackground">#121212</item>
+    <style name="Theme.OTTPlayerLite" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">#FFBB00</item>
+        <item name="colorSecondary">#FFBB00</item>
+        <item name="android:statusBarColor">#121212</item>
     </style>
 </resources>
