@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.*
-import org.json.JSONArray
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -39,17 +38,18 @@ class MainActivity : AppCompatActivity() {
         editPass.setText(prefs.getString("pass", ""))
 
         btnLoad.setOnClickListener {
-            val h = editHost.text.toString()
-            val u = editUser.text.toString()
-            val p = editPass.text.toString()
+            val h = editHost.text.toString().trim()
+            val u = editUser.text.toString().trim()
+            val p = editPass.text.toString().trim()
             
             prefs.edit().putString("host", h).putString("user", u).putString("pass", p).apply()
-            
-            if (h.contains("get.php") || h.endsWith(".m3u") || h.endsWith(".m3u8")) {
-                fetchData(h, false)
-            } else {
-                val apiUrl = "$h/player_api.php?username=$u&password=$p&action=get_live_streams"
-                fetchData(apiUrl, true)
+
+            when {
+                h.contains("m3u", ignoreCase = true) -> fetchData(h, isXtream = false, isStalker = h.contains("iptvprivateserver"))
+                else -> {
+                    val apiUrl = "$h/player_api.php?username=$u&password=$p&action=get_live_streams"
+                    fetchData(apiUrl, isXtream = true, isStalker = false)
+                }
             }
         }
 
@@ -60,39 +60,25 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun fetchData(url: String, isXtream: Boolean) {
+    private fun fetchData(urlStr: String, isXtream: Boolean, isStalker: Boolean) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val conn = URL(url).openConnection() as HttpURLConnection
-                conn.connectTimeout = 8000
+                val conn = URL(urlStr).openConnection() as HttpURLConnection
+                if (isStalker) {
+                    val mac = prefs.getString("user", "")
+                    conn.setRequestProperty("Cookie", "mac=$mac")
+                    conn.setRequestProperty("User-Agent", "Mozilla/5.0 (MAG200; STB)")
+                }
                 val data = conn.inputStream.bufferedReader().use { it.readText() }
-                
                 allChannels = if (isXtream) parseXtream(data) else parseM3U(data)
-
                 withContext(Dispatchers.Main) {
                     PlayerActivity.playlist = allChannels
                     updateAdapter(allChannels)
                 }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) { 
-                    Toast.makeText(this@MainActivity, "Błąd połączenia!", Toast.LENGTH_SHORT).show() 
-                }
+                withContext(Dispatchers.Main) { Toast.makeText(this@MainActivity, "Błąd!", Toast.LENGTH_SHORT).show() }
             }
         }
-    }
-
-    private fun parseXtream(json: String): List<Channel> {
-        val list = mutableListOf<Channel>()
-        val arr = JSONArray(json)
-        val h = prefs.getString("host", "")
-        val u = prefs.getString("user", "")
-        val p = prefs.getString("pass", "")
-        for (i in 0 until arr.length()) {
-            val obj = arr.getJSONObject(i)
-            val streamUrl = "$h/live/$u/$p/${obj.getString("stream_id")}.ts"
-            list.add(Channel(obj.getString("name"), streamUrl, obj.optString("stream_icon"), obj.optString("category_name")))
-        }
-        return list
     }
 
     private fun parseM3U(m3u: String): List<Channel> {
@@ -107,6 +93,20 @@ class MainActivity : AppCompatActivity() {
                 list.add(Channel(name, line.trim(), logo, group))
             }
         }
+        return list
+    }
+
+    private fun parseXtream(json: String): List<Channel> {
+        val list = mutableListOf<Channel>()
+        try {
+            val arr = org.json.JSONArray(json)
+            val h = prefs.getString("host", ""); val u = prefs.getString("user", ""); val p = prefs.getString("pass", "")
+            for (i in 0 until arr.length()) {
+                val obj = arr.getJSONObject(i)
+                val sUrl = "$h/live/$u/$p/${obj.getString("stream_id")}.ts"
+                list.add(Channel(obj.getString("name"), sUrl, obj.optString("stream_icon"), obj.optString("category_name")))
+            }
+        } catch (e: Exception) {}
         return list
     }
 
