@@ -1,16 +1,16 @@
 package com.ottplayerlite.data
 
-import android.content.Context
 import com.ottplayerlite.Channel
 import com.ottplayerlite.utils.M3UParser
+import java.net.URL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 object PlaylistManager {
-    suspend fun getPlaylist(context: Context, url: String): List<Channel> = withContext(Dispatchers.IO) {
+    suspend fun fetchAndParse(url: String): List<Channel> = withContext(Dispatchers.IO) {
         try {
-            // Wywołujemy poprawną metodę z naszego parsera
-            return@withContext M3UParser.fetchAndParse(context, url)
+            val content = URL(url).readText()
+            return@withContext M3UParser.parse(content)
         } catch (e: Exception) {
             e.printStackTrace()
             return@withContext emptyList<Channel>()
