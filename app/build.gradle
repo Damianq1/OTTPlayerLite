@@ -13,7 +13,6 @@ android {
         targetSdk 34
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -31,10 +30,6 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-
-    buildFeatures {
-        viewBinding true
-    }
 }
 
 dependencies {
@@ -43,15 +38,17 @@ dependencies {
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     
-    // ExoPlayer
+    // Media & VLC
     implementation 'androidx.media3:media3-exoplayer:1.2.1'
     implementation 'androidx.media3:media3-ui:1.2.1'
-    implementation 'androidx.media3:media3-common:1.2.1'
-    
-    // VLC
     implementation 'org.videolan.android:libvlc-all:3.6.0'
     
-    // Inne
+    // Glide (Logo/Obrazy) - TEGO BRAKOWAŁO
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
+    
+    // NanoHTTPD (Serwer zdalny) - TEGO BRAKOWAŁO
+    implementation 'org.nanohttpd:nanohttpd:2.3.1'
+    
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
-    implementation 'androidx.work:work-runtime-ktx:2.9.0'
 }

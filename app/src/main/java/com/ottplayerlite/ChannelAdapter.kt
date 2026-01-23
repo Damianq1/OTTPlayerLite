@@ -12,28 +12,26 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 class ChannelAdapter(
     private val channels: List<Channel>,
     private val onClick: (Channel) -> Unit
-) : RecyclerView.Adapter<ChannelAdapter.ChannelViewHolder>() {
+) : RecyclerView.Adapter<ChannelAdapter.ViewHolder>() {
 
-    class ChannelViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val name: TextView = view.findViewById(R.id.channelName)
-        val group: TextView = view.findViewById(R.id.channelGroup)
         val logo: ImageView = view.findViewById(R.id.channelLogo)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChannelViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_channel, parent, false)
-        return ChannelViewHolder(view)
+        return ViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: ChannelViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val channel = channels[position]
         holder.name.text = channel.name
-        holder.group.text = channel.group
         
         Glide.with(holder.itemView.context)
-            .load(channel.logo)
+            .load(channel.logoUrl)
+            .placeholder(android.R.drawable.ic_menu_gallery)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
-            .placeholder(android.R.drawable.ic_menu_report_image)
             .into(holder.logo)
 
         holder.itemView.setOnClickListener { onClick(channel) }
