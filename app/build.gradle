@@ -22,7 +22,6 @@ android {
         }
     }
 
-    // To naprawia Twój błąd Inconsistent JVM-target
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -35,16 +34,18 @@ android {
     packaging {
         jniLibs {
             useLegacyPackaging = true
-            keepDebugSymbols += "**/*.so"
+            pickFirsts += 'lib/*/libc++_shared.so'
+            pickFirsts += 'lib/*/libgnustl_shared.so'
         }
         resources {
-            pickFirsts += "lib/*/libc++_shared.so"
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+            excludes += 'META-INF/DEPENDENCIES'
+            pickFirsts += 'META-INF/LICENSE*'
         }
     }
 }
 
 dependencies {
-    implementation 'org.nanohttpd:nanohttpd:2.3.1'
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.11.0'
@@ -53,4 +54,5 @@ dependencies {
     implementation 'androidx.media3:media3-ui:1.2.1'
     implementation 'org.videolan.android:libvlc-all:3.6.0'
     implementation 'com.github.bumptech.glide:glide:4.16.0'
+    implementation 'org.nanohttpd:nanohttpd:2.3.1'
 }

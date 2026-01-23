@@ -15,10 +15,17 @@ class MainActivity : AppCompatActivity() {
     private var allChannels = listOf<Channel>()
     private lateinit var recyclerView: RecyclerView
     private val prefs by lazy { getSharedPreferences("OTT_DATA", Context.MODE_PRIVATE) }
+    private var remoteServer: RemoteServer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // Start serwera na porcie 8080
+        try {
+            remoteServer = RemoteServer(this, 8080)
+            remoteServer?.start()
+        } catch (e: Exception) { e.printStackTrace() }
 
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -39,7 +46,7 @@ class MainActivity : AppCompatActivity() {
                 val content = URL(host).readText()
                 allChannels = parseM3U(content)
                 withContext(Dispatchers.Main) {
-                    com.ottplayerlite.PlayerActivity.playlist = allChannels
+                    PlayerActivity.playlist = allChannels
                     recyclerView.adapter = ChannelAdapter(allChannels) { channel ->
                         startPlayer(channel.url)
                     }
@@ -76,5 +83,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return list
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        remoteServer?.stop()
     }
 }
