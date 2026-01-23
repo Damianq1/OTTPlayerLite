@@ -8,7 +8,6 @@ import android.util.Rational
 import android.view.KeyEvent
 import android.view.View
 import android.widget.ProgressBar
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.media3.common.MediaItem
@@ -49,48 +48,64 @@ class PlayerActivity : AppCompatActivity() {
 
         val savedBuffer = prefs.getInt("buffer_${channel.url.hashCode()}", 3000)
 
-        // POPRAWKA: Media3 DefaultLoadControl używa setBufferMs w Builderze inaczej
+        // Konfiguracja bufora Anti-Freeze
         val loadControl = DefaultLoadControl.Builder()
-        .setBufferMs(
-            savedBuffer, // minBufferMs
-            savedBuffer + 5000, // maxBufferMs
-            1000, // bufferForPlaybackMs
-            1500 // bufferForPlaybackAfterRebufferMs
-        )
-        .setPrioritizeTimeOverSizeThresholds(true)
-        .build()
+            .setBufferMs(
+                savedBuffer,        // minBufferMs
+                savedBuffer + 5000, // maxBufferMs
+                1000,               // bufferForPlaybackMs
+                1500                // bufferForPlaybackAfterRebufferMs
+            )
+            .setPrioritizeTimeOverSizeThresholds(true)
+            .build()
 
-        override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-            when (keyCode) {
-                KeyEvent.KEYCODE_PROG_GREEN -> {
-                    enterPipMode()
-                    return true
-                }
-                KeyEvent.KEYCODE_PROG_RED -> {
-                    val currentUrl = playlist[currentIndex].url
-                    val currentBuf = prefs.getInt("buffer_${currentUrl.hashCode()}", 3000)
-                    val newBuf = currentBuf + 2000
-                    prefs.edit().putInt("buffer_${currentUrl.hashCode()}", newBuf).apply()
-                    Toast.makeText(this, "Anti-Freeze: ${newBuf/1000}s", Toast.LENGTH_SHORT).show()
-                    playCurrent()
-                    return true
-                }
-                // KEYCODE_VIEW_MODE może nie być dostępny na wszystkich API, używamy Int
-                82, KeyEvent.KEYCODE_PROG_YELLOW -> {
-                    val nextMode = AspectRatioManager.getNextMode()
-                    playerView.resizeMode = nextMode
-                    return true
-                }
+        // INICJALIZACJA ODTWARZACZA (Tego brakowało!)
+        player = ExoPlayer.Builder(this)
+            .setLoadControl(loadControl)
+            .build()
+
+        playerView.player = player
+        player?.setMediaItem(MediaItem.fromUri(channel.url))
+        player?.prepare()
+        player?.play()
+    } // <-- KLUCZOWA KLAMRA: Tutaj kończymy playCurrent()
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        when (keyCode) {
+            KeyEvent.KEYCODE_PROG_GREEN -> {
+                enterPipMode()
+                return true
             }
-            return super.onKeyDown(keyCode, event)
+            KeyEvent.KEYCODE_PROG_RED -> {
+                val currentUrl = playlist[currentIndex].url
+                val currentBuf = prefs.getInt("buffer_${currentUrl.hashCode()}", 3000)
+                val newBuf = currentBuf + 2000
+                prefs.edit().putInt("buffer_${currentUrl.hashCode()}", newBuf).apply()
+                Toast.makeText(this, "Anti-Freeze: ${newBuf/1000}s", Toast.LENGTH_SHORT).show()
+                playCurrent()
+                return true
+            }
+            // Obsługa zmiany proporcji obrazu
+            82, KeyEvent.KEYCODE_PROG_YELLOW -> {
+                val nextMode = AspectRatioManager.getNextMode()
+                playerView.resizeMode = nextMode
+                return true
+            }
         }
+        return super.onKeyDown(keyCode, event)
+    }
 
-        private fun enterPipMode() {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val params = PictureInPictureParams.Builder()
+    private fun enterPipMode() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val params = PictureInPictureParams.Builder()
                 .setAspectRatio(Rational(16, 9))
                 .build()
-                enterPictureInPictureMode(params)
-            }
+            enterPictureInPictureMode(params)
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        player?.release()
+    }
+}
