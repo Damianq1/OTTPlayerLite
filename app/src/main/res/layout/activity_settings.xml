@@ -2,7 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#121212">
+    android:background="@color/ultimate_dark">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,74 +14,42 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="ULTIMATE CONTROL CENTER"
-            android:textColor="#FFBB00"
+            android:textColor="@color/ultimate_gold"
             android:textSize="20sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Power Management"
-            android:textColor="#FFFFFF"
-            android:layout_marginTop="20dp"
-            android:textStyle="bold" />
+            android:text="Ustawienia Zasilania"
+            android:textColor="@color/white"
+            android:layout_marginTop="20dp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Czas do uśpienia (min):"
-            android:textColor="#BBBBBB" />
         <SeekBar android:id="@+id/timerSeekBar" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="240" />
-        <TextView android:id="@+id/timerValue" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#FFBB00" />
+        <TextView android:id="@+id/timerValue" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/ultimate_gold" />
+
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/ultimate_gray" android:layout_marginVertical="10dp"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Poziom ściemnienia (0=Ciemność):"
-            android:textColor="#BBBBBB" />
-        <SeekBar android:id="@+id/dimSeekBar" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="100" />
-        <TextView android:id="@+id/dimValue" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#FFBB00" />
+            android:text="Sieć i Proxy"
+            android:textColor="@color/white" />
+
+        <TextView android:id="@+id/vpnStatus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/white" />
 
         <com.google.android.material.switchmaterial.SwitchMaterial
-            android:id="@+id/switchShutdown"
+            android:id="@+id/switchProxy"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Zamknij aplikację (Standby)"
-            android:textColor="#FFFFFF" />
+            android:text="Użyj Proxy"
+            android:textColor="@color/white" />
 
-        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#444444" android:layout_marginVertical="15dp"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Network &amp; Spoofing"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold" />
-
-        <TextView android:id="@+id/vpnStatus" android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:text="Status VPN: Sprawdzanie..." android:layout_marginTop="5dp"/>
-
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:text="User-Agent Preset:" android:textColor="#BBBBBB" android:layout_marginTop="10dp"/>
-        <Spinner android:id="@+id/uaSpinner" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="#333333"/>
-        
-        <EditText android:id="@+id/uaEditText" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:textColor="#FFBB00" android:textSize="12sp" android:hint="Custom User-Agent" 
-            android:background="#222222" android:padding="10dp" android:layout_marginTop="5dp"/>
-
-        <com.google.android.material.switchmaterial.SwitchMaterial
-            android:id="@+id/switchProxy" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="Użyj Proxy HTTP/S" android:textColor="#FFFFFF" android:layout_marginTop="10dp" />
-
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-            <EditText android:id="@+id/proxyHost" android:layout_width="0dp" android:layout_height="wrap_content"
-                android:layout_weight="3" android:hint="Host IP" android:textColor="#FFBB00" android:background="#222222" android:padding="10dp"/>
-            <EditText android:id="@+id/proxyPort" android:layout_width="0dp" android:layout_height="wrap_content"
-                android:layout_weight="1" android:hint="Port" android:textColor="#FFBB00" android:background="#333333" android:padding="10dp" android:layout_marginStart="5dp"/>
-        </LinearLayout>
+        <EditText android:id="@+id/proxyHost" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Host" android:textColorHint="@color/ultimate_gray" android:textColor="@color/white"/>
+        <EditText android:id="@+id/proxyPort" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Port" android:textColorHint="@color/ultimate_gray" android:textColor="@color/white"/>
 
         <Button android:id="@+id/btnSaveProxy" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="ZAPISZ WSZYSTKIE USTAWIENIA" android:layout_marginTop="20dp" android:backgroundTint="#FFBB00" android:textColor="#000000"/>
+            android:text="ZAPISZ I WRÓĆ" android:layout_marginTop="20dp" android:backgroundTint="@color/ultimate_gold" android:textColor="@color/black"/>
 
     </LinearLayout>
 </ScrollView>
