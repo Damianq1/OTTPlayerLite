@@ -10,6 +10,10 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
+import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.PlayerView
@@ -24,7 +28,9 @@ class PlayerActivity : AppCompatActivity() {
     private var currentIndex = 0
     private val handler = Handler(Looper.getMainLooper())
 
-    companion object { var playlist: List<Channel> = listOf() }
+    companion object { 
+        var playlist: List<Channel> = listOf() 
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,13 +45,25 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun playChannel(index: Int) {
         player?.release()
+        if (playlist.isEmpty()) return
+        
         currentIndex = index
         val channel = playlist[index]
         
-        // Używamy Factory, która automatycznie obsłuży HLS (.m3u8) i DASH
+        // 1. Konfiguracja renderowania (HW + SW fallback dla kanałów z czarnym ekranem)
+        val renderersFactory = DefaultRenderersFactory(this)
+            .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
+
+        // 2. Konfiguracja źródła danych z User-Agent (żeby serwer nie odrzucał połączenia)
+        val dataSourceFactory = DefaultHttpDataSource.Factory()
+            .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+            .setAllowCrossProtocolRedirects(true)
+
         val mediaSourceFactory = DefaultMediaSourceFactory(this)
-        
-        player = ExoPlayer.Builder(this)
+            .setDataSourceFactory(dataSourceFactory)
+
+        // 3. Budowa Playera
+        player = ExoPlayer.Builder(this, renderersFactory)
             .setMediaSourceFactory(mediaSourceFactory)
             .build()
             .apply {
@@ -53,31 +71,42 @@ class PlayerActivity : AppCompatActivity() {
                 prepare()
                 play()
             }
+            
         playerView.player = player
         
+        // Listener błędów
+        player?.addListener(object : Player.Listener {
+            override fun onPlayerError(error: PlaybackException) {
+                Toast.makeText(this@PlayerActivity, "Błąd odtwarzania: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+
         if (ModuleManager.isEnabled(this, "stats")) startStatsMonitor()
         showOverlay(channel)
     }
 
     private fun showOverlay(channel: Channel) {
         val overlay = findViewById<View>(R.id.channelOverlay) ?: return
-        findViewById<TextView>(R.id.channelName)?.text = channel.name
+        val nameText = findViewById<TextView>(R.id.channelName)
+        nameText?.text = channel.name
+        
         overlay.visibility = View.VISIBLE
-        handler.removeCallbacksAndMessages("overlay")
-        handler.postAtTime({ overlay.visibility = View.GONE }, "overlay", SystemClock.uptimeMillis() + 5000)
+        handler.removeCallbacksAndMessages("overlay_timer")
+        handler.postAtTime({ overlay.visibility = View.GONE }, "overlay_timer", SystemClock.uptimeMillis() + 5000)
     }
 
     private fun startStatsMonitor() {
         handler.post(object : Runnable {
             override fun run() {
                 val format = player?.videoFormat
-                if (format != null) {
-                    findViewById<View>(R.id.statsContainer)?.visibility = View.VISIBLE
+                val statsContainer = findViewById<View>(R.id.statsContainer)
+                if (format != null && statsContainer != null) {
+                    statsContainer.visibility = View.VISIBLE
                     findViewById<TextView>(R.id.txtResolution)?.text = "Res: ${format.width}x${format.height}"
                     findViewById<TextView>(R.id.txtFps)?.apply {
                         val fps = format.frameRate.toInt()
                         text = "FPS: $fps"
-                        setTextColor(if (fps < 10) Color.RED else Color.GREEN)
+                        setTextColor(if (fps <= 0) Color.RED else Color.GREEN)
                     }
                 }
                 handler.postDelayed(this, 2000)
@@ -88,18 +117,34 @@ class PlayerActivity : AppCompatActivity() {
     override fun onUserLeaveHint() {
         if (ModuleManager.isEnabled(this, "pip")) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                enterPictureInPictureMode(PictureInPictureParams.Builder()
+                val params = PictureInPictureParams.Builder()
                     .setAspectRatio(Rational(16, 9))
-                    .build())
+                    .build()
+                enterPictureInPictureMode(params)
             }
         }
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         when (keyCode) {
-            KeyEvent.KEYCODE_DPAD_UP -> { playChannel((currentIndex + 1) % playlist.size); return true }
-            KeyEvent.KEYCODE_DPAD_DOWN -> { playChannel((currentIndex - 1 + playlist.size) % playlist.size); return true }
-            KeyEvent.KEYCODE_BACK -> { finish(); return true }
+            KeyEvent.KEYCODE_DPAD_UP -> { 
+                val next = (currentIndex + 1) % playlist.size
+                playChannel(next)
+                return true 
+            }
+            KeyEvent.KEYCODE_DPAD_DOWN -> { 
+                val prev = if (currentIndex - 1 < 0) playlist.size - 1 else currentIndex - 1
+                playChannel(prev)
+                return true 
+            }
+            KeyEvent.KEYCODE_BACK -> { 
+                if (playerView.isControllerFullyVisible) {
+                    playerView.hideController()
+                } else {
+                    finish()
+                }
+                return true 
+            }
         }
         return super.onKeyDown(keyCode, event)
     }
