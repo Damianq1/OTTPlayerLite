@@ -18,6 +18,8 @@ import java.net.URL
 class MainActivity : AppCompatActivity() {
     private var allChannels = listOf<Channel>()
     private lateinit var recyclerView: RecyclerView
+    private val PREFS_NAME = "OTT_PREFS"
+    private val LAST_URL_KEY = "last_m3u_url"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,6 +32,15 @@ class MainActivity : AppCompatActivity() {
         val urlInputLayout = findViewById<TextInputLayout>(R.id.urlInputLayout)
         val btnLoad = findViewById<ExtendedFloatingActionButton>(R.id.btnLoad)
 
+        // 1. WCZYTYWANIE OSTATNIEGO LINKU PRZY STARCIE
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val savedUrl = prefs.getString(LAST_URL_KEY, "")
+        if (!savedUrl.isNullOrEmpty()) {
+            urlInput.setText(savedUrl)
+            loadPlaylist(savedUrl)
+        }
+
+        // OBSŁUGA SCHOWKA
         urlInputLayout?.setEndIconOnClickListener {
             val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val item = clipboard.primaryClip?.getItemAt(0)
@@ -50,6 +61,11 @@ class MainActivity : AppCompatActivity() {
                 conn.connectTimeout = 8000
                 val content = conn.inputStream.bufferedReader().use { it.readText() }
                 allChannels = parseM3U(content)
+                
+                // 2. ZAPISYWANIE LINKU PO UDANYM POBRANIU
+                getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                    .edit().putString(LAST_URL_KEY, url).apply()
+
                 withContext(Dispatchers.Main) {
                     PlayerActivity.playlist = allChannels
                     recyclerView.adapter = ChannelAdapter(allChannels) { channel ->
