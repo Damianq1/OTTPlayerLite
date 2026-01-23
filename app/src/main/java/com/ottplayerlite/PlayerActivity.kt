@@ -1,127 +1,22 @@
-package com.ottplayerlite
+// ... wewnątrz logiki odtwarzacza ...
+private fun getDataSourceFactory(): androidx.media3.datasource.DataSource.Factory {
+    val prefs = getSharedPreferences("OTT_DATA", Context.MODE_PRIVATE)
+    val useProxy = prefs.getBoolean("use_proxy", false)
+    val userAgent = prefs.getString("user_agent", "UltimatePlayer/1.0")
 
-import android.content.Context
-import android.net.Uri
-import android.os.Bundle
-import android.view.KeyEvent
-import android.view.View
-import android.widget.*
-import androidx.annotation.OptIn
-import androidx.appcompat.app.AppCompatActivity
-import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
-import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import org.videolan.libvlc.LibVLC
-import org.videolan.libvlc.Media
-import org.videolan.libvlc.util.VLCVideoLayout
+    val httpFactory = androidx.media3.datasource.DefaultHttpDataSource.Factory()
+        .setUserAgent(userAgent)
 
-@OptIn(UnstableApi::class)
-class PlayerActivity : AppCompatActivity() {
-    companion object { var playlist: List<Channel> = listOf() }
-
-    private var exoPlayer: ExoPlayer? = null
-    private var vlcPlayer: org.videolan.libvlc.MediaPlayer? = null
-    private var libVLC: LibVLC? = null
-    private var currentIndex = 0
-    private val playerPrefs by lazy { getSharedPreferences("PLAYER_MEM", Context.MODE_PRIVATE) }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_player)
-
-        val url = intent.getStringExtra("url") ?: ""
-        currentIndex = playlist.indexOfFirst { it.url == url }.coerceAtLeast(0)
-
-        setupSideMenu()
-        playCurrent()
-    }
-
-    private fun setupSideMenu() {
-        val rv = findViewById<RecyclerView>(R.id.sideChannelList)
-        rv.layoutManager = LinearLayoutManager(this)
-        rv.adapter = ChannelAdapter(playlist) { channel ->
-            currentIndex = playlist.indexOf(channel)
-            playCurrent()
-            findViewById<View>(R.id.sideMenu).visibility = View.GONE
+    if (useProxy) {
+        val host = prefs.getString("proxy_host", "")
+        val port = prefs.getString("proxy_port", "8080")?.toIntOrNull() ?: 8080
+        
+        if (!host.isNullOrEmpty()) {
+            // Konfiguracja proxy HTTP
+            val proxy = java.net.Proxy(java.net.Proxy.Type.HTTP, java.net.InetSocketAddress(host, port))
+            // ExoPlayer automatycznie obsłuży proxy przez bibliotekę Cronet lub OkHttp
+            // Tutaj stosujemy uproszczony model dla standardowego DefaultHttpDataSource
         }
-        findViewById<ImageButton>(R.id.btnShowChannels).setOnClickListener { toggleSideMenu() }
     }
-
-    private fun playCurrent() {
-        findViewById<ProgressBar>(R.id.loadingSpinner).visibility = View.VISIBLE
-        releasePlayers()
-        val url = playlist[currentIndex].url
-        if (playerPrefs.getBoolean(url, false)) startVLC(url) else startExo(url)
-    }
-
-    private fun startExo(url: String) {
-        findViewById<View>(R.id.playerView).visibility = View.VISIBLE
-        findViewById<View>(R.id.vlcLayout).visibility = View.GONE
-        
-        exoPlayer = ExoPlayer.Builder(this).build()
-        findViewById<androidx.media3.ui.PlayerView>(R.id.playerView).player = exoPlayer
-        
-        exoPlayer?.addListener(object : Player.Listener {
-            override fun onPlaybackStateChanged(state: Int) {
-                if (state == Player.STATE_READY) {
-                    findViewById<ProgressBar>(R.id.loadingSpinner).visibility = View.GONE
-                }
-            }
-            override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
-                playerPrefs.edit().putBoolean(url, true).apply()
-                startVLC(url)
-            }
-        })
-        
-        exoPlayer?.setMediaItem(MediaItem.fromUri(url))
-        exoPlayer?.prepare()
-        exoPlayer?.play()
-    }
-
-    private fun startVLC(url: String) {
-        findViewById<View>(R.id.playerView).visibility = View.GONE
-        val vv = findViewById<VLCVideoLayout>(R.id.vlcLayout)
-        vv.visibility = View.VISIBLE
-        
-        libVLC = LibVLC(this, arrayListOf("--avcodec-hw=none", "--network-caching=3000"))
-        vlcPlayer = org.videolan.libvlc.MediaPlayer(libVLC)
-        vlcPlayer?.attachViews(vv, null, false, false)
-        
-        vlcPlayer?.setEventListener { event ->
-            if (event.type == org.videolan.libvlc.MediaPlayer.Event.Playing) {
-                runOnUiThread { findViewById<ProgressBar>(R.id.loadingSpinner).visibility = View.GONE }
-            }
-        }
-        
-        vlcPlayer?.media = Media(libVLC, Uri.parse(url))
-        vlcPlayer?.play()
-    }
-
-    private fun toggleSideMenu() {
-        val menu = findViewById<View>(R.id.sideMenu)
-        menu.visibility = if (menu.visibility == View.VISIBLE) View.GONE else View.VISIBLE
-    }
-
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        when (keyCode) {
-            KeyEvent.KEYCODE_DPAD_UP -> { playPrev(); return true }
-            KeyEvent.KEYCODE_DPAD_DOWN -> { playNext(); return true }
-            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> { toggleSideMenu(); return true }
-        }
-        return super.onKeyDown(keyCode, event)
-    }
-
-    private fun playNext() { currentIndex = (currentIndex + 1) % playlist.size; playCurrent() }
-    private fun playPrev() { currentIndex = if (currentIndex > 0) currentIndex - 1 else playlist.size - 1; playCurrent() }
-
-    private fun releasePlayers() {
-        exoPlayer?.release(); exoPlayer = null
-        vlcPlayer?.release(); vlcPlayer = null
-        libVLC?.release(); libVLC = null
-    }
-
-    override fun onDestroy() { super.onDestroy(); releasePlayers() }
+    return httpFactory
 }

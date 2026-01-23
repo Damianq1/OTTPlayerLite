@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -6,60 +5,55 @@
     android:padding="20dp"
     android:background="#121212">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="KONFIGURACJA PLAYLISTY"
-        android:textColor="#FFBB00"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="20dp"/>
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="ULTIMATE POWER CONTROL" android:textColor="#FFBB00" android:textSize="20sp" />
 
-    <EditText
-        android:id="@+id/editHost"
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="Czas do uśpienia (min):" android:textColor="#FFFFFF" android:layout_marginTop="20dp"/>
+    <SeekBar android:id="@+id/timerSeekBar" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="240" />
+    <TextView android:id="@+id/timerValue" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#FFBB00" />
+
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="Poziom ściemnienia ekranu:" android:textColor="#FFFFFF" android:layout_marginTop="20dp"/>
+    <SeekBar android:id="@+id/dimSeekBar" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="100" />
+    <TextView android:id="@+id/dimValue" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#FFBB00" />
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/switchShutdown"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Wklej link M3U / URL Portalu"
+        android:text="Zamknij aplikację po czasie"
         android:textColor="#FFFFFF"
-        android:textColorHint="#888888"
-        android:backgroundTint="#FFBB00"
-        android:layout_marginBottom="10dp"/>
+        android:layout_marginTop="20dp" />
 
-    <EditText
-        android:id="@+id/editUser"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Użytkownik / MAC (opcjonalnie)"
-        android:textColor="#FFFFFF"
-        android:textColorHint="#888888"
-        android:backgroundTint="#FFBB00"
-        android:layout_marginBottom="10dp"/>
-
-    <EditText
-        android:id="@+id/editPass"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Hasło (opcjonalnie)"
-        android:textColor="#FFFFFF"
-        android:textColorHint="#888888"
-        android:backgroundTint="#FFBB00"
-        android:inputType="textPassword"
-        android:layout_marginBottom="30dp"/>
-
-    <Button
-        android:id="@+id/btnSave"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:text="ZAPISZ I ODŚWIEŻ"
-        android:backgroundTint="#FFBB00"
-        android:textColor="#000000"
-        android:textStyle="bold"/>
-        
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Wersja: Ultimate Player 1.0"
-        android:textColor="#444444"
-        android:gravity="center"
-        android:layout_marginTop="20dp"/>
 </LinearLayout>
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="User-Agent (Spoofing):" android:textColor="#FFFFFF" android:layout_marginTop="20dp"/>
+    
+    <Spinner android:id="@+id/uaSpinner" android:layout_width="match_parent" android:layout_height="wrap_content" 
+        android:background="#333333" android:layout_marginTop="5dp"/>
+    
+    <EditText android:id="@+id/uaEditText" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:textColor="#FFBB00" android:textSize="12sp" android:hint="Wpisz własny UA" 
+        android:background="#222222" android:layout_marginTop="5dp" android:padding="10dp"/>
+    
+    <Button android:id="@+id/btnSaveUA" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="Zastosuj UA" android:layout_marginTop="5dp" />
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#444444" android:layout_marginTop="20dp"/>
+    
+    <TextView android:id="@+id/vpnStatus" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="VPN: Sprawdzanie..." android:textStyle="bold" android:layout_marginTop="10dp"/>
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/switchProxy" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="Użyj serwera Proxy (SOCKS5/HTTP)" android:textColor="#FFFFFF" android:layout_marginTop="10dp" />
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+        <EditText android:id="@+id/proxyHost" android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="3" android:hint="Host (np. 1.2.3.4)" android:textColor="#FFBB00" android:background="#222222" android:padding="10dp"/>
+        <EditText android:id="@+id/proxyPort" android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:hint="Port" android:textColor="#FFBB00" android:background="#333333" android:padding="10dp" android:layout_marginStart="5dp"/>
+    </LinearLayout>
+
+    <Button android:id="@+id/btnSaveProxy" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="ZAPISZ USTAWIENIA SIECIOWE" android:layout_marginTop="10dp" />

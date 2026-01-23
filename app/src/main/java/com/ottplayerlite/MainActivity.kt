@@ -8,7 +8,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.*
 import java.net.URL
 
@@ -28,15 +27,10 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
-        loadData()
+        loadPlaylistAndStartLast()
     }
 
-    override fun onResume() {
-        super.onResume()
-        loadData()
-    }
-
-    private fun loadData() {
+    private fun loadPlaylistAndStartLast() {
         val host = prefs.getString("host", "") ?: ""
         if (host.isEmpty()) return
 
@@ -47,17 +41,28 @@ class MainActivity : AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     PlayerActivity.playlist = allChannels
                     recyclerView.adapter = ChannelAdapter(allChannels) { channel ->
-                        val i = Intent(this@MainActivity, PlayerActivity::class.java)
-                        i.putExtra("url", channel.url)
-                        startActivity(i)
+                        startPlayer(channel.url)
+                    }
+
+                    // Logika "Start on Last Channel"
+                    val lastUrl = prefs.getString("last_channel_url", "")
+                    if (!lastUrl.isNullOrEmpty() && allChannels.any { it.url == lastUrl }) {
+                        startPlayer(lastUrl)
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@MainActivity, "Błąd pobierania listy", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, "Błąd listy", Toast.LENGTH_SHORT).show()
                 }
             }
         }
+    }
+
+    private fun startPlayer(url: String) {
+        prefs.edit().putString("last_channel_url", url).apply()
+        val intent = Intent(this, PlayerActivity::class.java)
+        intent.putExtra("url", url)
+        startActivity(intent)
     }
 
     private fun parseM3U(m3u: String): List<Channel> {
