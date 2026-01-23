@@ -7,13 +7,10 @@ import android.net.NetworkCapabilities
 object NetworkManager {
     fun isVpnActive(context: Context): Boolean {
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networks = cm.allNetworks
-        for (network in networks) {
-            val caps = cm.getNetworkCapabilities(network)
-            if (caps != null && caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
-                return true
-            }
-        }
-        return false
+        val activeNetwork = cm.activeNetwork ?: return false
+        val caps = cm.getNetworkCapabilities(activeNetwork) ?: return false
+        
+        // Sprawdzamy transport VPN w nowoczesny sposób
+        return caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
     }
 }
