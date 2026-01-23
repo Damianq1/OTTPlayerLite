@@ -24,7 +24,7 @@ object EpgParser {
         parser.setInput(gzipStream, "UTF-8")
 
         var eventType = parser.eventType
-        var currentChannel: String? = null
+        var currentChannel: String?
         
         while (eventType != XmlPullParser.END_DOCUMENT) {
             val name = parser.name
