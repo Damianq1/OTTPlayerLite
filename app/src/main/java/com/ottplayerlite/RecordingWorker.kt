@@ -10,9 +10,8 @@ class RecordingWorker(context: Context, params: WorkerParameters) : Worker(conte
         val url = inputData.getString("url") ?: return Result.failure()
         val name = inputData.getString("name") ?: "recording"
         
-        // Logika nagrywania (uproszczona dla kompilacji)
         return try {
-            // Tutaj w przyszłości dodasz stream save logic
+            // Logika zapisu strumienia (placeholder)
             Result.success()
         } catch (e: Exception) {
             Result.failure()

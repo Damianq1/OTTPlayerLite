@@ -47,76 +47,35 @@ class PlayerActivity : AppCompatActivity() {
             playCurrent()
             findViewById<View>(R.id.sideMenu).visibility = View.GONE
         }
-        
         findViewById<ImageButton>(R.id.btnShowChannels).setOnClickListener { toggleSideMenu() }
     }
 
-    private fun toggleSideMenu() {
-        val menu = findViewById<View>(R.id.sideMenu)
-        val isVisible = menu.visibility == View.VISIBLE
-        menu.visibility = if (isVisible) View.GONE else View.VISIBLE
-        if (!isVisible) findViewById<RecyclerView>(R.id.sideChannelList).requestFocus()
-    }
-
-    // OBSŁUGA PILOTA
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        when (keyCode) {
-            KeyEvent.KEYCODE_DPAD_UP -> {
-                if (findViewById<View>(R.id.sideMenu).visibility == View.GONE) {
-                    playPrev()
-                    return true
-                }
-            }
-            KeyEvent.KEYCODE_DPAD_DOWN -> {
-                if (findViewById<View>(R.id.sideMenu).visibility == View.GONE) {
-                    playNext()
-                    return true
-                }
-            }
-            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> {
-                if (findViewById<View>(R.id.sideMenu).visibility == View.GONE) {
-                    toggleSideMenu()
-                    return true
-                }
-            }
-            KeyEvent.KEYCODE_BACK -> {
-                if (findViewById<View>(R.id.sideMenu).visibility == View.VISIBLE) {
-                    findViewById<View>(R.id.sideMenu).visibility = View.GONE
-                    return true
-                }
-            }
-        }
-        return super.onKeyDown(keyCode, event)
-    }
-
-    private fun playNext() {
-        currentIndex = (currentIndex + 1) % playlist.size
-        playCurrent()
-    }
-
-    private fun playPrev() {
-        currentIndex = if (currentIndex > 0) currentIndex - 1 else playlist.size - 1
-        playCurrent()
-    }
-
     private fun playCurrent() {
+        findViewById<ProgressBar>(R.id.loadingSpinner).visibility = View.VISIBLE
         releasePlayers()
         val url = playlist[currentIndex].url
         if (playerPrefs.getBoolean(url, false)) startVLC(url) else startExo(url)
-        Toast.makeText(this, "Kanał: ${playlist[currentIndex].name}", Toast.LENGTH_SHORT).show()
     }
 
     private fun startExo(url: String) {
         findViewById<View>(R.id.playerView).visibility = View.VISIBLE
         findViewById<View>(R.id.vlcLayout).visibility = View.GONE
+        
         exoPlayer = ExoPlayer.Builder(this).build()
         findViewById<androidx.media3.ui.PlayerView>(R.id.playerView).player = exoPlayer
+        
         exoPlayer?.addListener(object : Player.Listener {
+            override fun onPlaybackStateChanged(state: Int) {
+                if (state == Player.STATE_READY) {
+                    findViewById<ProgressBar>(R.id.loadingSpinner).visibility = View.GONE
+                }
+            }
             override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
                 playerPrefs.edit().putBoolean(url, true).apply()
                 startVLC(url)
             }
         })
+        
         exoPlayer?.setMediaItem(MediaItem.fromUri(url))
         exoPlayer?.prepare()
         exoPlayer?.play()
@@ -126,12 +85,37 @@ class PlayerActivity : AppCompatActivity() {
         findViewById<View>(R.id.playerView).visibility = View.GONE
         val vv = findViewById<VLCVideoLayout>(R.id.vlcLayout)
         vv.visibility = View.VISIBLE
+        
         libVLC = LibVLC(this, arrayListOf("--avcodec-hw=none", "--network-caching=3000"))
         vlcPlayer = org.videolan.libvlc.MediaPlayer(libVLC)
         vlcPlayer?.attachViews(vv, null, false, false)
+        
+        vlcPlayer?.setEventListener { event ->
+            if (event.type == org.videolan.libvlc.MediaPlayer.Event.Playing) {
+                runOnUiThread { findViewById<ProgressBar>(R.id.loadingSpinner).visibility = View.GONE }
+            }
+        }
+        
         vlcPlayer?.media = Media(libVLC, Uri.parse(url))
         vlcPlayer?.play()
     }
+
+    private fun toggleSideMenu() {
+        val menu = findViewById<View>(R.id.sideMenu)
+        menu.visibility = if (menu.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        when (keyCode) {
+            KeyEvent.KEYCODE_DPAD_UP -> { playPrev(); return true }
+            KeyEvent.KEYCODE_DPAD_DOWN -> { playNext(); return true }
+            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> { toggleSideMenu(); return true }
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
+    private fun playNext() { currentIndex = (currentIndex + 1) % playlist.size; playCurrent() }
+    private fun playPrev() { currentIndex = if (currentIndex > 0) currentIndex - 1 else playlist.size - 1; playCurrent() }
 
     private fun releasePlayers() {
         exoPlayer?.release(); exoPlayer = null

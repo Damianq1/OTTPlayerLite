@@ -7,6 +7,14 @@
     <androidx.media3.ui.PlayerView android:id="@+id/playerView" android:layout_width="match_parent" android:layout_height="match_parent" />
     <org.videolan.libvlc.util.VLCVideoLayout android:id="@+id/vlcLayout" android:layout_width="match_parent" android:layout_height="match_parent" />
 
+    <ProgressBar
+        android:id="@+id/loadingSpinner"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_gravity="center"
+        android:indeterminateTint="#FFBB00"
+        android:visibility="gone" />
+
     <ImageButton
         android:id="@+id/btnShowChannels"
         android:layout_width="50dp"
@@ -22,8 +30,6 @@
         android:background="#E6121212"
         android:visibility="gone"
         android:orientation="vertical">
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="KANAŁY" android:textColor="#FFBB00" android:padding="10dp" />
         <androidx.recyclerview.widget.RecyclerView android:id="@+id/sideChannelList" android:layout_width="match_parent" android:layout_height="match_parent" />
     </LinearLayout>
-
-    </FrameLayout>
+</FrameLayout>
