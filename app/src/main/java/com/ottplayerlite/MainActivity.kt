@@ -11,13 +11,16 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.*
 import java.net.URL
 import com.ottplayerlite.utils.M3UParser
+import com.ottplayerlite.data.PlaylistManager
 
 class MainActivity : AppCompatActivity() {
     private var allChannels = listOf<Channel>()
     private lateinit var recyclerView: RecyclerView
-    
+
     // Ujednolicony dostęp do ustawień
-    private val prefs by lazy { getSharedPreferences("ULTIMATE_PREFS", Context.MODE_PRIVATE) }
+    private val prefs by lazy {
+        getSharedPreferences("ULTIMATE_PREFS", Context.MODE_PRIVATE)
+    }
     private var remoteServer: RemoteServer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,7 +44,9 @@ class MainActivity : AppCompatActivity() {
         try {
             remoteServer = RemoteServer(this, 8080)
             remoteServer?.start()
-        } catch (e: Exception) { e.printStackTrace() }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun loadPlaylist() {
@@ -56,16 +61,16 @@ class MainActivity : AppCompatActivity() {
             try {
                 val content = URL(m3uUrl).readText()
                 // Używamy naszego nowego, potężnego parsera
-                allChannels = M3UParser.parse(content)
-                
+                allChannels = PlaylistManager.fetchAndParse(m3uUrl)
                 withContext(Dispatchers.Main) {
                     PlayerActivity.playlist = allChannels
-                    
-                    val adapter = ChannelAdapter(allChannels) { channel ->
+
+                    val adapter = ChannelAdapter(allChannels) {
+                        channel ->
                         startPlayer(channel.url)
                     }
                     recyclerView.adapter = adapter
-                    
+
                     // Funkcja Resume: Jeśli użytkownik włączył aplikację, wróć do ostatniego kanału
                     autoResumeLastChannel()
                 }
@@ -80,7 +85,9 @@ class MainActivity : AppCompatActivity() {
     private fun autoResumeLastChannel() {
         val lastUrl = prefs.getString("last_channel_url", "")
         if (!lastUrl.isNullOrEmpty()) {
-            val lastChannel = allChannels.find { it.url == lastUrl }
+            val lastChannel = allChannels.find {
+                it.url == lastUrl
+            }
             if (lastChannel != null) {
                 // Opcjonalnie: możesz dodać powiadomienie "Wznawianie ostatniego kanału..."
                 startPlayer(lastUrl)
@@ -91,7 +98,7 @@ class MainActivity : AppCompatActivity() {
     private fun startPlayer(url: String) {
         // Zapisujemy URL dla funkcji Resume
         prefs.edit().putString("last_channel_url", url).apply()
-        
+
         val intent = Intent(this, PlayerActivity::class.java)
         intent.putExtra("url", url)
         startActivity(intent)
