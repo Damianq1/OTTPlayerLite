@@ -3,23 +3,15 @@ package com.ottplayerlite
 import android.content.Context
 
 object ModuleManager {
-    fun isEnabled(context: Context, moduleKey: String): Boolean {
-        // Sprawdzamy wersję po ID pakietu zamiast BuildConfig
-        val isLite = context.packageName.endsWith(".lite")
-        
-        if (isLite) {
-            // Blokada ciężkich modułów dla wersji Lite
-            if (moduleKey == "stats" || moduleKey == "pip" || moduleKey == "remote" || moduleKey == "recording") {
-                return false
-            }
-        }
-        
-        val prefs = context.getSharedPreferences("Modules", Context.MODE_PRIVATE)
-        return prefs.getBoolean(moduleKey, true)
+    private const val PREFS_NAME = "MODULE_SETTINGS"
+
+    fun isEnabled(context: Context, moduleName: String): Boolean {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getBoolean(moduleName, true)
     }
 
-    fun setModuleStatus(context: Context, moduleKey: String, status: Boolean) {
-        context.getSharedPreferences("Modules", Context.MODE_PRIVATE)
-            .edit().putBoolean(moduleKey, status).apply()
+    fun setEnabled(context: Context, moduleName: String, enabled: Boolean) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putBoolean(moduleName, enabled).apply()
     }
 }
