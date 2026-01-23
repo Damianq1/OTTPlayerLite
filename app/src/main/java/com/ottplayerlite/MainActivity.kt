@@ -13,6 +13,7 @@ import java.net.URL
 
 class MainActivity : AppCompatActivity() {
     private var allChannels = listOf<Channel>()
+    private var filteredChannels = listOf<Channel>()
     private lateinit var recyclerView: RecyclerView
     private val prefs by lazy { getSharedPreferences("OTT_DATA", Context.MODE_PRIVATE) }
     private var remoteServer: RemoteServer? = null

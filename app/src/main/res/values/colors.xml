@@ -2,8 +2,4 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="ultimate_gold">#FFBB00</color>
-    <color name="ultimate_dark">#121212</color>
-    <color name="ultimate_gray">#333333</color>
-    <color name="ultimate_focus">#44FFBB00</color>
-</resources>
+    <color name="ultimate_gold">#FFBB00</color> <color name="ultimate_gold_dark">#80FFBB00</color> <color name="ultimate_dark_bg">#0A0A0A</color> <color name="ultimate_gray">#2C2C2C</color> <color name="ultimate_focus_bg">#1AFFFFFF</color> </resources>
