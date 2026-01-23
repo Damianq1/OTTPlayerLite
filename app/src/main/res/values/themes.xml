@@ -5,4 +5,10 @@
         <item name="android:statusBarColor">#121212</item>
         <item name="android:windowBackground">#121212</item>
     </style>
+
+    <style name="Theme.Material3.Dark.NoActionBar.Fullscreen" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
 </resources>

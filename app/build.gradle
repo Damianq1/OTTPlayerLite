@@ -5,6 +5,7 @@ plugins {
 }
 
 android {
+    namespace "com.ottplayerlite"
     flavorDimensions "version" 
     productFlavors { 
         lite { 
