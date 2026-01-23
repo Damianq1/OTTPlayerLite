@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -33,21 +34,36 @@ class MainActivity : AppCompatActivity() {
         val editPass = findViewById<EditText>(R.id.editPass)
         val searchBar = findViewById<TextInputEditText>(R.id.searchBar)
         val btnLoad = findViewById<ExtendedFloatingActionButton>(R.id.btnLoad)
+        val btnSettings = findViewById<ImageButton>(R.id.btnSettings)
 
+        // Wczytywanie zapisanych danych
         editHost.setText(prefs.getString("host", ""))
         editUser.setText(prefs.getString("user", ""))
         editPass.setText(prefs.getString("pass", ""))
+
+        btnSettings.setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
 
         btnLoad.setOnClickListener {
             val h = editHost.text.toString().trim()
             val u = editUser.text.toString().trim()
             val p = editPass.text.toString().trim()
+            
             prefs.edit().putString("host", h).putString("user", u).putString("pass", p).apply()
 
             when {
+                // STALKER / MAC PORTAL
                 h.contains("p2.iptvprivateserver.tv") || h.contains("/c/") -> loadStalker(h, u)
-                h.contains("m3u") || h.contains("m3u8") -> fetchData(h, type = "M3U")
-                else -> fetchData("$h/player_api.php?username=$u&password=$p&action=get_live_streams", type = "XTREAM")
+                
+                // M3U / M3U8
+                h.contains("m3u", ignoreCase = true) -> fetchData(h, "M3U")
+                
+                // XTREAM CODES
+                else -> {
+                    val apiUrl = "$h/player_api.php?username=$u&password=$p&action=get_live_streams"
+                    fetchData(apiUrl, "XTREAM")
+                }
             }
         }
 
@@ -61,51 +77,51 @@ class MainActivity : AppCompatActivity() {
     private fun loadStalker(host: String, mac: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // 1. Handshake & Get Token
+                // Handshake dla Portalu MAC
                 val handshakeUrl = "$host?type=stb&action=handshake"
-                val tokenJson = stalkerRequest(handshakeUrl, mac)
-                val token = JSONObject(tokenJson).getJSONObject("js").getString("token")
+                val conn = URL(handshakeUrl).openConnection() as HttpURLConnection
+                conn.setRequestProperty("Cookie", "mac=$mac")
+                val token = JSONObject(conn.inputStream.bufferedReader().use { it.readText() })
+                    .getJSONObject("js").getString("token")
 
-                // 2. Get Channels
+                // Pobieranie kanałów
                 val channelsUrl = "$host?type=itv&action=get_all_channels&token=$token"
-                val data = stalkerRequest(channelsUrl, mac)
-                allChannels = parseStalker(data, host, token)
+                val channelData = stalkerRequest(channelsUrl, mac)
+                allChannels = parseStalker(channelData)
 
                 withContext(Dispatchers.Main) { updateAdapter(allChannels) }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) { Toast.makeText(this@MainActivity, "Błąd MAC Portalu!", Toast.LENGTH_SHORT).show() }
+                withContext(Dispatchers.Main) { Toast.makeText(this@MainActivity, "Błąd Portalu MAC", Toast.LENGTH_SHORT).show() }
             }
         }
     }
 
     private fun stalkerRequest(urlStr: String, mac: String): String {
         val conn = URL(urlStr).openConnection() as HttpURLConnection
-        conn.setRequestProperty("User-Agent", "Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG200 sb2 embedded Safari/533.3")
-        conn.setRequestProperty("X-User-Agent", "Model: MAG250; SW: 2.20.0")
+        conn.setRequestProperty("User-Agent", "Mozilla/5.0 (MAG200; STB)")
         conn.setRequestProperty("Cookie", "mac=$mac")
         return conn.inputStream.bufferedReader().use { it.readText() }
     }
 
-    private fun parseStalker(json: String, host: String, token: String): List<Channel> {
+    private fun parseStalker(json: String): List<Channel> {
         val list = mutableListOf<Channel>()
         val arr = JSONObject(json).getJSONArray("js")
         for (i in 0 until arr.length()) {
             val obj = arr.getJSONObject(i)
-            val cmd = obj.getString("cmd").replace("ffmpeg ", "")
-            list.add(Channel(obj.getString("name"), cmd, obj.optString("logo"), obj.optString("tvg_name")))
+            val url = obj.getString("cmd").replace("ffmpeg ", "")
+            list.add(Channel(obj.getString("name"), url, obj.optString("logo"), "Stalker"))
         }
         return list
     }
 
-    private fun fetchData(url: String, type: String) {
+    private fun fetchData(urlStr: String, type: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val conn = URL(url).openConnection() as HttpURLConnection
-                val data = conn.inputStream.bufferedReader().use { it.readText() }
+                val data = URL(urlStr).readText()
                 allChannels = if (type == "XTREAM") parseXtream(data) else parseM3U(data)
                 withContext(Dispatchers.Main) { updateAdapter(allChannels) }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) { Toast.makeText(this@MainActivity, "Błąd $type!", Toast.LENGTH_SHORT).show() }
+                withContext(Dispatchers.Main) { Toast.makeText(this@MainActivity, "Błąd $type", Toast.LENGTH_SHORT).show() }
             }
         }
     }
