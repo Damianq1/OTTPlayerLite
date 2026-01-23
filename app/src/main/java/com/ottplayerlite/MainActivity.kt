@@ -3,10 +3,8 @@ package com.ottplayerlite
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
-import android.view.View
-import android.widget.*
+import android.widget.ImageButton
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -30,30 +28,33 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
-        findViewById<TextInputEditText>(R.id.searchBar).addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) { filterList(s.toString()) }
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-        })
+        loadData()
     }
 
     override fun onResume() {
         super.onResume()
-        loadPlaylist()
+        loadData()
     }
 
-    private fun loadPlaylist() {
+    private fun loadData() {
         val host = prefs.getString("host", "") ?: ""
         if (host.isEmpty()) return
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val data = URL(host).readText()
-                allChannels = parseM3U(data)
-                withContext(Dispatchers.Main) { updateAdapter(allChannels) }
+                val content = URL(host).readText()
+                allChannels = parseM3U(content)
+                withContext(Dispatchers.Main) {
+                    PlayerActivity.playlist = allChannels
+                    recyclerView.adapter = ChannelAdapter(allChannels) { channel ->
+                        val i = Intent(this@MainActivity, PlayerActivity::class.java)
+                        i.putExtra("url", channel.url)
+                        startActivity(i)
+                    }
+                }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@MainActivity, "Błąd linku. Sprawdź ustawienia.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@MainActivity, "Błąd pobierania listy", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -71,17 +72,5 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return list
-    }
-
-    private fun filterList(query: String) {
-        val filtered = allChannels.filter { it.name.contains(query, ignoreCase = true) }
-        updateAdapter(filtered)
-    }
-
-    private fun updateAdapter(list: List<Channel>) {
-        PlayerActivity.playlist = list
-        recyclerView.adapter = ChannelAdapter(list) { channel ->
-            startActivity(Intent(this, PlayerActivity::class.java).apply { putExtra("url", channel.url) })
-        }
     }
 }
