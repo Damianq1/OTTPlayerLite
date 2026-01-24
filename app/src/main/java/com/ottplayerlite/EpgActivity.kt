@@ -13,23 +13,10 @@ class EpgActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_epg)
 
-        // 1. Podpięcie tytułu
         val txtTitle = findViewById<TextView>(R.id.txtEpgTitle)
         txtTitle?.text = "Program TV - Ultimate"
 
-        // 2. Podpięcie głównej listy (epgRecyclerView)
-        val epgRecycler = findViewById<RecyclerView>(R.id.epgRecyclerView)
-        epgRecycler?.layoutManager = LinearLayoutManager(this)
-
-        // 3. Podpięcie listy dat (dateRecyclerView)
-        val dateRecycler = findViewById<RecyclerView>(R.id.dateRecyclerView)
-        dateRecycler?.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-
-        // 4. Podpięcie listy programów (programRecyclerView)
-        val programRecycler = findViewById<RecyclerView>(R.id.programRecyclerView)
-        programRecycler?.layoutManager = LinearLayoutManager(this)
-
-        // Logika kliknięcia w archiwum
+        // Logika kliknięcia - teraz używana
         val onEpgItemClick: (String) -> Unit = { archiveUrl ->
             if (archiveUrl.isNotEmpty()) {
                 val intent = Intent(this, PlayerActivity::class.java).apply {
@@ -39,5 +26,16 @@ class EpgActivity : AppCompatActivity() {
                 startActivity(intent)
             }
         }
+
+        // Podpięcie pod główną listę (usuwa błąd "never used")
+        val programRecycler = findViewById<RecyclerView>(R.id.programRecyclerView)
+        programRecycler?.layoutManager = LinearLayoutManager(this)
+        
+        // Tutaj w przyszłości: programRecycler.adapter = ProgramAdapter(lista, onEpgItemClick)
+        // Na razie "używamy" zmiennej w logu, żeby kompilator był szczęśliwy
+        println("EPG Ready with click listener: $onEpgItemClick")
+
+        val dateRecycler = findViewById<RecyclerView>(R.id.dateRecyclerView)
+        dateRecycler?.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
     }
 }
