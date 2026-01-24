@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun startRemoteServer() {
         try {
-            remoteServer = RemoteServer(this, 8080)
+            remoteServer = RemoteServer(applicationContext, 8080)
             remoteServer?.start()
         } catch (e: Exception) {
             e.printStackTrace()
@@ -59,7 +59,6 @@ class MainActivity : AppCompatActivity() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val content = URL(m3uUrl).readText()
                 // Używamy naszego nowego, potężnego parsera
                 allChannels = PlaylistManager.fetchAndParse(m3uUrl)
                 withContext(Dispatchers.Main) {

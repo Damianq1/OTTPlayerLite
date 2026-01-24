@@ -45,7 +45,7 @@ class EpgActivity : AppCompatActivity() {
     private fun onProgramSelected(programStartTime: Long, isArchive: Boolean) {
         if (isArchive) {
             val url = intent.getStringExtra("channel_url") ?: ""
-            val archiveUrl = CatchupManager.getArchiveUrl(url, programStartTime)
+            val intent = Intent(this, PlayerActivity::class.java).apply { putExtra("url", archiveUrl) }; startActivity(intent) //  CatchupManager.getArchiveUrl(url, programStartTime)
             // Wyślij archiveUrl do odtwarzacza
             Toast.makeText(this, "Uruchamiam Archiwum...", Toast.LENGTH_SHORT).show()
         }
