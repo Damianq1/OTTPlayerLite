@@ -16,6 +16,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import com.ottplayerlite.utils.AspectRatioManager
 import com.ottplayerlite.utils.AFRManager
+import androidx.media3.exoplayer.exoplayer
 
 class PlayerActivity : AppCompatActivity() {
     companion object {
@@ -48,27 +49,28 @@ class PlayerActivity : AppCompatActivity() {
 
         val savedBuffer = prefs.getInt("buffer_${channel.url.hashCode()}", 3000)
 
-        // Konfiguracja bufora Anti-Freeze
+        // TO JEST KLUCZOWY FRAGMENT - sprawdź kropki przed metodami
         val loadControl = DefaultLoadControl.Builder()
-            .setBufferMs(
-                savedBuffer,        // minBufferMs
-                savedBuffer + 5000, // maxBufferMs
-                1000,               // bufferForPlaybackMs
-                1500                // bufferForPlaybackAfterRebufferMs
-            )
-            .setPrioritizeTimeOverSizeThresholds(true)
-            .build()
+        .setBufferMs(
+            savedBuffer, // minBufferMs
+            savedBuffer + 5000, // maxBufferMs
+            1000, // bufferForPlaybackMs
+            1500 // bufferForPlaybackAfterRebufferMs
+        )
+        .setPrioritizeTimeOverSizeThresholds(true)
+        .build()
 
-        // INICJALIZACJA ODTWARZACZA (Tego brakowało!)
+        // Inicjalizacja ExoPlayer z użyciem powyższego loadControl
         player = ExoPlayer.Builder(this)
-            .setLoadControl(loadControl)
-            .build()
+        .setLoadControl(loadControl)
+        .build()
 
         playerView.player = player
         player?.setMediaItem(MediaItem.fromUri(channel.url))
         player?.prepare()
         player?.play()
-    } // <-- KLUCZOWA KLAMRA: Tutaj kończymy playCurrent()
+    }
+
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         when (keyCode) {
@@ -98,8 +100,8 @@ class PlayerActivity : AppCompatActivity() {
     private fun enterPipMode() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val params = PictureInPictureParams.Builder()
-                .setAspectRatio(Rational(16, 9))
-                .build()
+            .setAspectRatio(Rational(16, 9))
+            .build()
             enterPictureInPictureMode(params)
         }
     }
