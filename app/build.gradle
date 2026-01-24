@@ -2,56 +2,48 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
 }
+
 android {
     namespace 'com.ottplayerlite'
     compileSdk 34
 
-
     defaultConfig {
         applicationId "com.ultimate.player"
-        minSdk 24
+        minSdk 21
         targetSdk 34
         versionCode 1
-        versionName "1.0-ULTIMATE"
+        versionName "1.0-ultimate"
     }
 
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-
     kotlinOptions {
         jvmTarget = '17'
-    }
-
-    packaging {
-        jniLibs {
-            useLegacyPackaging = true
-            pickFirsts += 'lib/*/libc++_shared.so'
-        }
-        resources {
-            // Te linie rozwiązują błąd IncrementalSplitterRunnable
-            excludes += 'META-INF/DEPENDENCIES'
-            excludes += 'META-INF/LICENSE*'
-            excludes += 'META-INF/NOTICE*'
-            excludes += 'META-INF/INDEX.LIST'
-            excludes += 'META-INF/kotlinx-*.kotlin_module'
-            excludes += 'META-INF/sdk_release.properties'
-            excludes += 'META-INF/gradle/incremental.annotation.processors'
-            pickFirsts += 'META-INF/library_release.xml'
-        }
     }
 }
 
 dependencies {
-    implementation 'androidx.recyclerview:recyclerview:1.3.2''
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.11.0'
-    implementation 'androidx.work:work-runtime-ktx:2.9.0'
+    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    
+    // Poprawione biblioteki (bez podwójnych apostrofów)
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+    
+    // Media3 dla Odtwarzacza Ultimate
     implementation 'androidx.media3:media3-exoplayer:1.2.1'
     implementation 'androidx.media3:media3-ui:1.2.1'
-    implementation 'org.videolan.android:libvlc-all:3.6.0'
-    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    implementation 'androidx.media3:media3-session:1.2.1'
+    
+    // Serwer HTTP
     implementation 'org.nanohttpd:nanohttpd:2.3.1'
 }
