@@ -5,17 +5,20 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.ottplayerlite.R
 
 class EpgActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_epg)
 
+        // JAWNE powiązanie widoku - to usunie błąd Unresolved reference
         val recyclerView = findViewById<RecyclerView>(R.id.epgRecyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        
+        if (recyclerView != null) {
+            recyclerView.layoutManager = LinearLayoutManager(this)
+        }
 
-        // Przykład użycia archiveUrl przy kliknięciu w element EPG
-        // Zakładamy, że adapter zwraca url do nagrania
         val onEpgItemClick: (String) -> Unit = { archiveUrl ->
             if (archiveUrl.isNotEmpty()) {
                 val intent = Intent(this, PlayerActivity::class.java).apply {
@@ -25,8 +28,5 @@ class EpgActivity : AppCompatActivity() {
                 startActivity(intent)
             }
         }
-        
-        // Tutaj ładowany byłby Twój adapter EPG
-        // recyclerView.adapter = EpgAdapter(epgList, onEpgItemClick)
     }
 }
