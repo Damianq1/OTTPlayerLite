@@ -1,11 +1,10 @@
-android {
-    namespace 'com.ottplayerlite'
-    compileSdk 34
-
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
 }
+android {
+    namespace 'com.ottplayerlite'
+    compileSdk 34
 
 
     defaultConfig {
