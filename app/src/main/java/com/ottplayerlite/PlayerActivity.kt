@@ -51,7 +51,7 @@ class PlayerActivity : AppCompatActivity() {
 
         // TO JEST KLUCZOWY FRAGMENT - sprawdź kropki przed metodami
         val loadControl = DefaultLoadControl.Builder()
-        .setBufferMs(
+        .setBufferDurationsMs(
             savedBuffer, // minBufferMs
             savedBuffer + 5000, // maxBufferMs
             1000, // bufferForPlaybackMs
