@@ -16,7 +16,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import com.ottplayerlite.utils.AspectRatioManager
 import com.ottplayerlite.utils.AFRManager
-import androidx.media3.exoplayer.exoplayer
+
 
 class PlayerActivity : AppCompatActivity() {
     companion object {
