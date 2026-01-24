@@ -12,11 +12,14 @@ class EpgActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_epg)
 
-        // JAWNE powiązanie widoku - to usunie błąd Unresolved reference
+        // POPRAWKA: Definiujemy recyclerView lokalnie i łączymy z XML przez R.id
         val recyclerView = findViewById<RecyclerView>(R.id.epgRecyclerView)
         
-        if (recyclerView != null) {
-            recyclerView.layoutManager = LinearLayoutManager(this)
+        // Sprawdzamy, czy widok istnieje, żeby uniknąć crashu
+        recyclerView?.let {
+            it.layoutManager = LinearLayoutManager(this)
+            // Tutaj możesz przypisać adapter w przyszłości
+            // it.adapter = EpgAdapter(...) 
         }
 
         val onEpgItemClick: (String) -> Unit = { archiveUrl ->
